@@ -233,6 +233,24 @@ SPARK3:
     spark.ssl.trustStorePassword: $truststorepassword
     spark.ssl.historyServer.port: 18581
     spark.ui.https.enabled: true    
+
+
+DRUID:
+  - config_type: druid-common
+    druid.client.https.protocol: TLSv1.2
+    druid.client.https.trustStorePassword: $truststorepassword
+    druid.client.https.trustStorePath: $truststore
+    druid.client.https.trustStoreType: jks
+    druid.server.https.certAlias: nifi-cert
+    druid.server.https.keyStorePassword: $keystorepassword
+    druid.server.https.keyStorePath: $keystore
+    druid.server.https.keyStoreType: jks
+
+DRUIDUI
+  - config_type: druid-common
+    druid.enablePlaintextPort: false
+    druid.enableTlsPort: true
+
     
 OOZIE:
   - config_type: oozie-site
