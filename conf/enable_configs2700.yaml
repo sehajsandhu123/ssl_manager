@@ -245,9 +245,6 @@ DRUID:
     druid.server.https.keyStorePassword: $keystorepassword
     druid.server.https.keyStorePath: $keystore
     druid.server.https.keyStoreType: jks
-
-DRUIDUI:
-  - config_type: druid-common
     druid.enablePlaintextPort: false
     druid.enableTlsPort: true
 
