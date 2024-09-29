@@ -49,7 +49,7 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 
 public class TlsToolkitStandalone {
-    public static final String NIFI_KEY = "nifi-key";
+    public static final String NIFI_KEY = "nifi-cert";
     public static final String NIFI_CERT = "nifi-cert";
     public static final String NIFI_PROPERTIES = "nifi.properties";
 

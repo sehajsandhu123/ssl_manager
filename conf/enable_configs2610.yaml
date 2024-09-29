@@ -104,7 +104,7 @@ RANGERADMIN:
     ranger.service.http.enabled: false
     ranger.https.attrib.keystore.file: $keystore
     ranger.service.https.attrib.keystore.pass: $keystorepassword
-    ranger.service.https.attrib.keystore.keyalias: nifi-key
+    ranger.service.https.attrib.keystore.keyalias: nifi-cert
     ranger.service.https.attrib.clientAuth: want
     ranger.service.https.attrib.ssl.enabled: true
     ranger.service.https.port: 6182

@@ -288,6 +288,18 @@ def disable_configs(service, accessor, cluster, conf_file):
             logger.info("Disabled SSL for service {0}[{1}]".format(service, config_type))
     return
 
+def get_remote_os_type(ssh_key, userhost):
+    """Function to determine the OS type dynamically via SSH"""
+    try:
+        os_check_command = 'cat /etc/os-release | grep "^ID=" | cut -d"=" -f2'
+        result = subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, os_check_command],
+                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        os_type, _ = result.communicate()
+        os_type = os_type.decode('utf-8').strip().lower()
+        return os_type
+    except Exception as e:
+        logger.error("Failed to determine OS type for host {0}: {1}".format(userhost, str(e)))
+        return None
 
 def copy_certs(properties, ssh_key, scpusername, ownership):
     opdir = os.path.abspath(read_conf_file(properties, "caprops", "outputDirectory"))
@@ -310,6 +322,38 @@ def copy_certs(properties, ssh_key, scpusername, ownership):
         logger.info("Changing the ownership of certificates..")
         subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'chown', '-R', ownership,
                          CERT_DIR]).communicate()
+
+        # Determine the OS type dynamically
+        os_type = get_remote_os_type(ssh_key, userhost)
+
+        if os_type:
+            if os_type == 'ubuntu':
+                logger.info("Running keytool commands for Ubuntu...")
+                export_command = "keytool -exportcert -alias nifi-cert -keystore  " + CERT_DIR + "truststore.jks -file /tmp/mycert.crt -storepass Hadoop@123 -noprompt"
+                import_command_cacerts = "keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ssl/certs/java/cacerts -storepass changeit -noprompt"
+                import_command_ambari = "keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit -noprompt"
+            elif os_type == 'rhel' or os_type == 'centos' or os_type == 'rocky':
+                logger.info("Running keytool commands for Rocky Linux or RHEL...")
+                export_command = "keytool -exportcert -alias nifi-cert -keystore  /etc/security/certificates/truststore.jks -file /tmp/mycert.crt -storepass Hadoop@123 -noprompt"
+                import_command_cacerts = "keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/pki/ca-trust/extracted/java/cacerts -storepass changeit -noprompt"
+                import_command_ambari = "keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit -noprompt"
+
+            # Execute export cert command
+            logger.info("Exporting cert from truststore on host {0}".format(host))
+            subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, export_command], shell=True).communicate()
+
+            # Execute import cert command for cacerts
+            logger.info("Importing cert into cacerts on host {0}".format(host))
+            subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, import_command_cacerts], shell=True).communicate()
+
+            # Execute import cert command for Ambari truststore if on Ubuntu
+            logger.info("Importing cert into Ambari truststore on host {0}".format(host))
+            subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, import_command_ambari], shell=True).communicate()
+
+        else:
+            logger.error("Could not determine OS type for host {0}. Skipping keytool operations.".format(host)
+
+
     return
 
 
