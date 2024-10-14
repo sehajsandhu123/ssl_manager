@@ -71,6 +71,14 @@ KAFKA:
     ssl.truststore.location: $truststore
     ssl.truststore.password: $truststorepassword
 
+KAFKA3:
+  - config_type: kafka3-broker
+    ssl.keystore.location: $keystore
+    ssl.keystore.password: $keystorepassword
+    ssl.key.password: $keystorepassword
+    ssl.truststore.location: $truststore
+    ssl.truststore.password: $truststorepassword
+
 HIVE:
   - config_type: hive-site
     hive.server2.use.SSL: true
@@ -248,7 +256,31 @@ DRUID:
     druid.enablePlaintextPort: false
     druid.enableTlsPort: true
 
-    
+IMPALA:
+  - config_type: impala-env
+    client_services_ssl_enabled: True
+    ssl_client_ca_certificate: $pemCert
+    ssl_private_key: $pemKey
+    webserver_private_key_file: $pemKey
+    ssl_server_certificate: $pemCert
+    webserver_certificate_file: $pemCert
+
+AIRFLOW:
+  - config_type: airflow-webserver-site
+    enable_ssl: True
+    web_server_ssl_cert: $pemCert
+    web_server_ssl_key: $pemKey
+
+REGISTRY:
+  - config_type: registry-ssl-config
+    registry.keyStorePassword: $keystorepassword
+    registry.keyStorePath: $keystore
+    registry.keyStoreType: JKS
+    registry.trustStorePassword: $truststorepassword
+    registry.trustStorePath: $truststore
+    registry.trustStoreType: JKS
+    registry.ssl.isenabled: True
+
 OOZIE:
   - config_type: oozie-site
     oozie.https.enabled: true

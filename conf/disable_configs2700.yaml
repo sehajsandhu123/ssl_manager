@@ -51,6 +51,14 @@ KAFKA:
     ssl.truststore.location: $truststore
     ssl.truststore.password: $truststorepassword
 
+KAFKA3:
+  - config_type: kafka3-broker
+    ssl.keystore.location: $keystore
+    ssl.keystore.password: $keystorepassword
+    ssl.key.password: $keystorepassword
+    ssl.truststore.location: $truststore
+    ssl.truststore.password: $truststorepassword
+
 HIVE:
   - config_type: hive-site
     hive.server2.use.SSL: false
@@ -109,7 +117,46 @@ SPARK3:
     spark.authenticate.enableSaslEncryption: false
     spark.ssl.enabled: false
     spark.ui.https.enabled: false
-    
+
+DRUID:
+  - config_type: druid-common
+    druid.client.https.protocol: TLSv1.2
+    druid.client.https.trustStorePassword: $truststorepassword
+    druid.client.https.trustStorePath: $truststore
+    druid.client.https.trustStoreType: jks
+    druid.server.https.certAlias: nifi-cert
+    druid.server.https.keyStorePassword: $keystorepassword
+    druid.server.https.keyStorePath: $keystore
+    druid.server.https.keyStoreType: jks
+    druid.enablePlaintextPort: true
+    druid.enableTlsPort: false
+
+IMPALA:
+  - config_type: impala-env
+    client_services_ssl_enabled: False
+    ssl_client_ca_certificate: $pemCert
+    ssl_private_key: $pemKey
+    webserver_private_key_file: $pemKey
+    ssl_server_certificate: $pemCert
+    webserver_certificate_file: $pemCert
+
+AIRFLOW:
+  - config_type: airflow-webserver-site
+    enable_ssl: False
+    web_server_ssl_cert: $pemCert
+    web_server_ssl_key: $pemKey
+
+REGISTRY:
+  - config_type: registry-ssl-config
+    registry.keyStorePassword: $keystorepassword
+    registry.keyStorePath: $keystore
+    registry.keyStoreType: JKS
+    registry.trustStorePassword: $truststorepassword
+    registry.trustStorePath: $truststore
+    registry.trustStoreType: JKS
+    registry.ssl.isenabled: False
+
+
 RANGERPLUGINS:
   - config_type: ranger-test-policymgr-ssl
     xasecure.policymgr.clientssl.keystore: /usr/hdp/current/hadoop-client/conf/ranger-plugin-keystore.jks

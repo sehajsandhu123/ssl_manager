@@ -19,10 +19,10 @@ CA_DIR = os.getcwd()
 CA_CONF_DIR = "conf"
 
 #####
-ALL_SERVICES = ['HDFS', 'MRSHUFFLE', 'TEZ', 'HIVE', 'KAFKA', 'RANGER', 'SPARK2', 'SPARK3','DRUID']
+ALL_SERVICES = ['HDFS', 'MRSHUFFLE', 'TEZ', 'HIVE', 'KAFKA', 'KAFKA3', 'RANGER', 'SPARK2', 'SPARK3','DRUID','IMPALA']
 RANGER = ['RANGERADMIN', 'RANGERPLUGINS']
 
-ALL_UI = ['HDFSUI', 'YARN', 'MAPREDUCE2UI', 'HBASE', 'OOZIE', 'AMBARI_INFRA', 'AMBARI_INFRA_SOLR', 'ATLAS', 'ZEPPELIN', 'NIFI', 'NIFI_REGISTRY']
+ALL_UI = ['HDFSUI', 'YARN', 'MAPREDUCE2UI', 'HBASE', 'OOZIE', 'AMBARI_INFRA', 'AMBARI_INFRA_SOLR', 'ATLAS', 'ZEPPELIN', 'NIFI', 'NIFI_REGISTRY','AIRFLOW','REGISTRY']
 AMBARI = ['AMBARIUI']
 #####
 
@@ -37,6 +37,9 @@ AMBARI_PEM = 'ambari-keystore.pem'
 AMBARI_CRT = 'ambari-keystore.crt'
 KEYSTORE_LOCATION = os.path.join(CERT_DIR, 'keystore.jks')
 TRUSTSTORE_LOCATION = os.path.join(CERT_DIR, 'truststore.jks')
+PEM_KEY_LOCATION = os.path.join(CERT_DIR, 'key.pem')
+PEM_CERT_LOCATION = os.path.join(CERT_DIR, 'cert.pem')
+
 keystorepassword = ""
 truststorepassword = ""
 accessor = ""
@@ -237,6 +240,10 @@ def update_configs_ambari(services, accessor, cluster, conf_file):
                     section[k] = KEYSTORE_LOCATION
                 elif section[k] == "$truststore":
                     section[k] = TRUSTSTORE_LOCATION
+                elif section[k] == "$pemKey":
+                    section[k] = PEM_KEY_LOCATION
+                elif section[k] == "$pemCert":
+                    section[k] = PEM_CERT_LOCATION
                 elif section[k] == "$keystorepassword":
                     section[k] = keystorepassword
                 elif section[k] == "$truststorepassword":
@@ -318,7 +325,7 @@ def get_remote_os_type(ssh_key, userhost):
         return None
 
 
-def execute_remote_commands(ssh_key, userhost, export_command, delete_command_cacerts, delete_command_ambari,import_command_cacerts, import_command_ambari):
+def execute_remote_commands(ssh_key, userhost, export_command, delete_command_cacerts, delete_command_ambari,import_command_cacerts, import_command_ambari, create_pkcs12, create_pem_key, create_pem_cert):
     try:
         # Execute export cert command
         logger.info("Exporting cert from truststore on host {0}".format(userhost))
@@ -356,6 +363,30 @@ def execute_remote_commands(ssh_key, userhost, export_command, delete_command_ca
             shell=True
         ).communicate()
 
+
+        # Create pkcs12 file to extract key and cert for impala, airflow ssl
+        logger.info("Create pkcs12 file on host {0}".format(userhost))
+        subprocess.Popen(
+            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, create_pkcs12),
+            shell=True
+        ).communicate()
+
+
+        # Create pem key file for SSL enablement
+        logger.info("Create pem key file on host {0}".format(userhost))
+        subprocess.Popen(
+            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, create_pem_key),
+            shell=True
+        ).communicate()
+
+
+        # Create pem cert file for SSL enablement
+        logger.info("Create pem cert file on host {0}".format(userhost))
+        subprocess.Popen(
+            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, create_pem_cert),
+            shell=True
+        ).communicate()
+
     except Exception as e:
         logger.error("Failed to execute commands on host {0}: {1}".format(userhost, str(e)))
 
@@ -385,6 +416,12 @@ def copy_certs(properties, ssh_key, scpusername, ownership):
         logger.info("Changing the ownership of certificates..")
         subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'chown', '-R', ownership, CERT_DIR]).communicate()
 
+        create_pkcs12 = "keytool -importkeystore -srckeystore " + CERT_DIR + "keystore.jks -destkeystore " + CERT_DIR + "keystore.p12 -srcstoretype jks -deststoretype pkcs12 -srcstorepass " + keystorepassword + " -deststorepass " + keystorepassword + " -destkeypass " + keystorepassword + " -alias nifi-cert"
+
+        create_pem_key = "openssl pkcs12 -in  " + CERT_DIR + "keystore.p12  -nocerts -out  " + CERT_DIR + "key.pem -nodes -passin pass: " + keystorepassword + " && chmod o+rwx " + CERT_DIR + "key.pem"
+
+        create_pem_cert = "openssl pkcs12 -in  " + CERT_DIR + "keystore.p12  -nokeys -out  " + CERT_DIR + "cert.pem -passin pass: " + keystorepassword  + " && chmod o+rwx " + CERT_DIR + "cert.pem"
+
         # Determine the OS type dynamically
         os_type = get_remote_os_type(ssh_key, userhost)
 
@@ -392,7 +429,7 @@ def copy_certs(properties, ssh_key, scpusername, ownership):
         if os_type:
             if os_type == 'ubuntu':
                 logger.info("Running keytool commands for Ubuntu...")
-                export_command = "keytool -exportcert -alias nifi-cert -keystore " + CERT_DIR + "truststore.jks -file /tmp/mycert.crt -storepass Hadoop@123 -noprompt"
+                export_command = "keytool -exportcert -alias nifi-cert -keystore " + CERT_DIR + "truststore.jks -file /tmp/mycert.crt -storepass " + truststorepassword + " -noprompt"
                 delete_command_cacerts = "keytool -delete -alias nifi-cert -keystore /etc/ssl/certs/java/cacerts -storepass changeit"
                 delete_command_ambari = "keytool -delete -alias nifi-cert -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit"
 
@@ -410,7 +447,7 @@ def copy_certs(properties, ssh_key, scpusername, ownership):
                 import_command_ambari = "keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit -noprompt"
 
             # Execute the remote commands
-            execute_remote_commands(ssh_key, userhost, export_command, delete_command_cacerts, delete_command_ambari, import_command_cacerts, import_command_ambari)
+            execute_remote_commands(ssh_key, userhost, export_command, delete_command_cacerts, delete_command_ambari, import_command_cacerts, import_command_ambari, create_pkcs12, create_pem_key, create_pem_cert)
         else:
             logger.error("Could not determine OS type for host {0}. Skipping keytool operations.".format(userhost))
 
