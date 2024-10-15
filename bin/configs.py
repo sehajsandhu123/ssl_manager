@@ -56,9 +56,9 @@ CLUSTERS_URL = '/api/v1/clusters/{0}'
 DESIRED_CONFIGS_URL = CLUSTERS_URL + '?fields=Clusters/desired_configs'
 CONFIGURATION_URL = CLUSTERS_URL + '/configurations?type={1}&tag={2}'
 SERVICES_URL = CLUSTERS_URL + '/services'
+
 SUB_KAFKA_SERVICES_URL = CLUSTERS_URL + '/services/KAFKA'
 SUB_KAFKA3_SERVICES_URL = CLUSTERS_URL + '/services/KAFKA3'
-
 VERSION_URL = '/api/v1/services/AMBARI/components/AMBARI_SERVER?fields=RootServiceComponents/component_version'
 
 FILE_FORMAT = \
@@ -170,7 +170,7 @@ def get_installed_services(cluster, accessor):
                 for subservice in kafka3_subservices['components']:
                     installed_services.append(subservice['ServiceComponentInfo']['component_name'])
 
-        return installed_services
+  return installed_services
 
 
 def get_ambari_version(accessor):
