@@ -165,7 +165,7 @@ CRUISE_CONTROL:
   - config_type: cruise-control
     ssl.client.auth: none
     ssl.enabled.protocols: TLSv1.2
-    ssl.endpoint.identificaton.algorithm: HTTPS
+    ssl.endpoint.identification.algorithm: HTTPS
     ssl.key.password: $keystorepassword
     ssl.keystore.location: $keystore
     ssl.keystore.password: $keystorepassword
@@ -185,7 +185,7 @@ CRUISE_CONTROL3:
   - config_type: cruise-control3
     ssl.client.auth: none
     ssl.enabled.protocols: TLSv1.2
-    ssl.endpoint.identificaton.algorithm: HTTPS
+    ssl.endpoint.identification.algorithm: HTTPS
     ssl.key.password: $keystorepassword
     ssl.keystore.location: $keystore
     ssl.keystore.password: $keystorepassword
