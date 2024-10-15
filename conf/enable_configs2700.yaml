@@ -71,6 +71,96 @@ KAFKA:
     ssl.truststore.location: $truststore
     ssl.truststore.password: $truststorepassword
 
+OZONE:
+  - config_type: ozone-env
+    ozone_datanode_ssl_enabled: true
+    ozone_manager_ssl_enabled: true
+    ozone_recon_ssl_enabled: true
+    ozone_s3g_ssl_enabled: true
+    ozone_scm_ssl_enabled: true
+    ozone__ssl_enabled: true
+    ozone__ssl_enabled: true
+
+  - config_type: ozone-ssl-client
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+
+  - config_type: ssl-client-datanode
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+
+  - config_type: ssl-client-om
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+
+  - config_type: ssl-client-recon
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+
+  - config_type: ssl-client-s3g
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+
+  - config_type: ssl-client-scm
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+
+  - config_type: ssl-server-datanode
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+    ssl.client.keystore.location: $keystore
+    ssl.client.keystore.keypassword: $keystorepassword
+    ssl.client.keystore.password: $keystorepassword
+    ssl.client.keystore.type: jks
+
+  - config_type: ssl-server-om
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+    ssl.client.keystore.location: $keystore
+    ssl.client.keystore.keypassword: $keystorepassword
+    ssl.client.keystore.password: $keystorepassword
+    ssl.client.keystore.type: jks
+
+  - config_type: ssl-server-recon
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+    ssl.client.keystore.location: $keystore
+    ssl.client.keystore.keypassword: $keystorepassword
+    ssl.client.keystore.password: $keystorepassword
+    ssl.client.keystore.type: jks
+
+  - config_type: ssl-server-s3g
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+    ssl.client.keystore.location: $keystore
+    ssl.client.keystore.keypassword: $keystorepassword
+    ssl.client.keystore.password: $keystorepassword
+    ssl.client.keystore.type: jks
+
+  - config_type: ssl-server-scm
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+    ssl.client.keystore.location: $keystore
+    ssl.client.keystore.keypassword: $keystorepassword
+    ssl.client.keystore.password: $keystorepassword
+    ssl.client.keystore.type: jks
+
+  - config_type: ozone-site
+    ozone.https.client.keystore.resource: ssl-client.xml
+    ozone.https.server.keystore.resource: ssl-client.xml
+
+
 CRUISE-CONTROL:
   - config_type: cruise-control
     ssl.client.auth: none
