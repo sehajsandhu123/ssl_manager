@@ -51,6 +51,46 @@ KAFKA:
     ssl.truststore.location: $truststore
     ssl.truststore.password: $truststorepassword
 
+CRUISE-CONTROL:
+  - config_type: cruise-control
+    ssl.client.auth: none
+    ssl.enabled.protocols: TLSv1.2
+    ssl.endpoint.identificaton.algorithm: HTTP
+    ssl.key.password: $keystorepassword
+    ssl.keystore.location: $keystore
+    ssl.keystore.password: $keystorepassword
+    ssl.truststore.location: $truststore
+    ssl.truststore.password: $truststorepassword
+    ssl.protocol: PLAINTEXT
+    webserver.ssl.enable: false
+    webserver.ssl.key.password: $keystorepassword
+    webserver.ssl.keystore.location: $keystore
+    webserver.ssl.keystore.password: $keystorepassword
+    webserver.ssl.keystore.type: jks
+    webserver.ssl.protocol: PLAINTEXT
+    webserver.ssl.truststore.location: $truststore
+    webserver.ssl.truststore.password: $truststorepassword
+
+CRUISE-CONTROL3:
+  - config_type: cruise-control3
+    ssl.client.auth: none
+    ssl.enabled.protocols: TLSv1.2
+    ssl.endpoint.identificaton.algorithm: HTTP
+    ssl.key.password: $keystorepassword
+    ssl.keystore.location: $keystore
+    ssl.keystore.password: $keystorepassword
+    ssl.truststore.location: $truststore
+    ssl.truststore.password: $truststorepassword
+    ssl.protocol: PLAINTEXT
+    webserver.ssl.enable: false
+    webserver.ssl.key.password: $keystorepassword
+    webserver.ssl.keystore.location: $keystore
+    webserver.ssl.keystore.password: $keystorepassword
+    webserver.ssl.keystore.type: jks
+    webserver.ssl.protocol: PLAINTEXT
+    webserver.ssl.truststore.location: $truststore
+    webserver.ssl.truststore.password: $truststorepassword
+
 KAFKA3:
   - config_type: kafka3-broker
     ssl.keystore.location: $keystore
