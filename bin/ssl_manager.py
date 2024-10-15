@@ -19,7 +19,7 @@ CA_DIR = os.getcwd()
 CA_CONF_DIR = "conf"
 
 #####
-ALL_SERVICES = ['HDFS', 'MRSHUFFLE', 'TEZ', 'HIVE', 'KAFKA', 'KAFKA3', 'RANGER', 'SPARK2', 'SPARK3','DRUID','IMPALA','OZONE' ,'CRUISE-CONTROL','CRUISE-CONTROL3']
+ALL_SERVICES = ['HDFS', 'MRSHUFFLE', 'TEZ', 'HIVE', 'KAFKA', 'KAFKA3', 'RANGER', 'SPARK2', 'SPARK3','DRUID' ,'IMPALA' ,'OZONE' ,'CRUISE_CONTROL' ,'CRUISE_CONTROL3']
 RANGER = ['RANGERADMIN', 'RANGERPLUGINS']
 
 ALL_UI = ['HDFSUI', 'YARN', 'MAPREDUCE2UI', 'HBASE', 'OOZIE', 'AMBARI_INFRA', 'AMBARI_INFRA_SOLR', 'ATLAS', 'ZEPPELIN', 'NIFI', 'NIFI_REGISTRY','AIRFLOW','REGISTRY']
@@ -760,6 +760,12 @@ def main():
     logger.debug("UI's ssl_manager can configure are: {0}".format(ALL_UI + AMBARI))
     logger.debug("Services ssl_manager can configure are: {0}".format(ALL_SERVICES + RANGER))
 
+
+    logger.info("Installed Services/UI's on cluster are: {0}".format(installed_services))
+    logger.info("UI's ssl_manager can configure are: {0}".format(ALL_UI + AMBARI))
+    logger.info("Services ssl_manager can configure are: {0}".format(ALL_SERVICES + RANGER))
+
+
     # To Prepare list of installed ranger plugins
     ranger_ui_to_be_considered = list(set(ALL_UI + AMBARI).intersection(installed_services))
     ranger_services_to_be_considered = list(set(ALL_SERVICES + RANGER).intersection(installed_services))
@@ -768,11 +774,11 @@ def main():
         if service is not None:
             if service.upper() != "ALL":
                 services = map(str.upper, service.split(','))
-                logger.debug("Services passed through cli are: {0}".format(services))
+                logger.info("Services passed through cli are: {0}".format(services))
                 services_to_be_considered = list(
                     set(ALL_SERVICES+RANGER).intersection(installed_services).intersection(services))
             elif service.upper() == "ALL":
-                logger.debug("Services passed through cli are: {0}".format(service))
+                logger.info("Services passed through cli are: {0}".format(service))
                 services_to_be_considered = list(set(ALL_SERVICES+RANGER).intersection(installed_services))
 
             if is_hadoop_required(services_to_be_considered, IS_HADOOP) is True:

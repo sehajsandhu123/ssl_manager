@@ -56,6 +56,9 @@ CLUSTERS_URL = '/api/v1/clusters/{0}'
 DESIRED_CONFIGS_URL = CLUSTERS_URL + '?fields=Clusters/desired_configs'
 CONFIGURATION_URL = CLUSTERS_URL + '/configurations?type={1}&tag={2}'
 SERVICES_URL = CLUSTERS_URL + '/services'
+SUB_KAFKA_SERVICES_URL = CLUSTERS_URL + '/services/KAFKA'
+SUB_KAFKA3_SERVICES_URL = CLUSTERS_URL + '/services/KAFKA3'
+
 VERSION_URL = '/api/v1/services/AMBARI/components/AMBARI_SERVER?fields=RootServiceComponents/component_version'
 
 FILE_FORMAT = \
@@ -142,8 +145,32 @@ def get_installed_services(cluster, accessor):
   services_response = json.loads(response)
   get_services = services_response[ITEMS]
   for i in get_services:
-    installed_services.append(i['ServiceInfo']['service_name'])
-  return installed_services
+        installed_services.append(i['ServiceInfo']['service_name'])
+        service_name = i['ServiceInfo']['service_name']
+
+        # If the service is Kafka, fetch its sub-services
+        if service_name.lower() == 'kafka':
+            logger.info("### Fetching Kafka sub-services..")
+            kafka_response = accessor(SUB_KAFKA_SERVICES_URL.format(cluster))
+            kafka_subservices = json.loads(kafka_response)
+
+            # Assuming sub-services are under the "components" key
+            if 'components' in kafka_subservices:
+                for subservice in kafka_subservices['components']:
+                    installed_services.append(subservice['ServiceComponentInfo']['component_name'])
+
+        # If the service is Kafka, fetch its sub-services
+        if service_name.lower() == 'kafka3':
+            logger.info("### Fetching Kafka sub-services..")
+            kafka3_response = accessor(SUB_KAFKA3_SERVICES_URL.format(cluster))
+            kafka3_subservices = json.loads(kafka3_response)
+
+            # Assuming sub-services are under the "components" key
+            if 'components' in kafka3_subservices:
+                for subservice in kafka3_subservices['components']:
+                    installed_services.append(subservice['ServiceComponentInfo']['component_name'])
+
+        return installed_services
 
 
 def get_ambari_version(accessor):

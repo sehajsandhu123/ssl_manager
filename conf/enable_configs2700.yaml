@@ -161,7 +161,7 @@ OZONE:
     ozone.https.server.keystore.resource: ssl-client.xml
 
 
-CRUISE-CONTROL:
+CRUISE_CONTROL:
   - config_type: cruise-control
     ssl.client.auth: none
     ssl.enabled.protocols: TLSv1.2
@@ -181,7 +181,7 @@ CRUISE-CONTROL:
     webserver.ssl.truststore.location: $truststore
     webserver.ssl.truststore.password: $truststorepassword
 
-CRUISE-CONTROL3:
+CRUISE_CONTROL3:
   - config_type: cruise-control3
     ssl.client.auth: none
     ssl.enabled.protocols: TLSv1.2
