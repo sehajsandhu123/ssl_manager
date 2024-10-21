@@ -180,6 +180,26 @@ IMPALA:
     ssl_server_certificate: $pemCert
     webserver_certificate_file: $pemCert
 
+
+FLINK:
+  - config_type: flink-conf
+    historyserver.web.ssl.enabled: false
+    security.ssl.internal.enabled: false
+    security.ssl.internal.keystore: $keystore
+    security.ssl.internal.truststore: $truststore
+    security.ssl.internal.key-password: $keystorepassword
+    security.ssl.internal.keystore-password: $keystorepassword
+    security.ssl.internal.truststore-password: $truststorepassword
+    security.ssl.rest.enabled: false
+    security.ssl.rest.keystore: $keystore
+    security.ssl.rest.truststore: $truststore
+    security.ssl.rest.key-password: $keystorepassword
+    security.ssl.rest.keystore-password: $keystorepassword
+    security.ssl.rest.truststore-password: $truststorepassword
+
+  - config_type: flink-log4j
+    security.ssl.key-password: $keystorepassword
+
 AIRFLOW:
   - config_type: airflow-webserver-site
     enable_ssl: False
