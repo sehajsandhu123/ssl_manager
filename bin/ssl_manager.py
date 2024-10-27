@@ -19,7 +19,7 @@ CA_DIR = os.getcwd()
 CA_CONF_DIR = "conf"
 
 #####
-ALL_SERVICES = ['HDFS', 'MRSHUFFLE', 'TEZ', 'HIVE', 'KAFKA', 'KAFKA3', 'RANGER', 'SPARK2', 'SPARK3','DRUID' ,'IMPALA' ,'OZONE' ,'CRUISE_CONTROL' ,'CRUISE_CONTROL3','FLINK']
+ALL_SERVICES = ['HDFS', 'MRSHUFFLE', 'TEZ', 'HIVE', 'KAFKA', 'KAFKA3', 'RANGER', 'SPARK2', 'SPARK3','DRUID' ,'IMPALA' ,'OZONE' ,'CRUISE_CONTROL' ,'CRUISE_CONTROL3','FLINK','LIVY','LIVY3']
 RANGER = ['RANGERADMIN', 'RANGERPLUGINS']
 
 ALL_UI = ['HDFSUI', 'YARN', 'MAPREDUCE2UI', 'HBASE', 'OOZIE', 'AMBARI_INFRA', 'AMBARI_INFRA_SOLR', 'ATLAS', 'ZEPPELIN', 'NIFI', 'NIFI_REGISTRY','AIRFLOW','REGISTRY']
@@ -560,6 +560,7 @@ def parse_service(services, accessor, cluster, conf_file):
                 logger.info("Enabling SSL for {0}".format(i))
                 update_configs_ambari(i.upper(), accessor, cluster, conf_file)
         else:
+            if u_name == '':
             update_configs_ambari(s_name, accessor, cluster, conf_file)
     return
 

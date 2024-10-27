@@ -374,6 +374,18 @@ SPARK3:
     spark.ui.https.enabled: true    
 
 
+LIVY:
+  - config_type: livy-conf
+    livy.keystore: $keystore
+    livy.keystore.password: $keystorepassword
+    livy.key-password: $keystorepassword
+
+LIVY3:
+  - config_type: livy3-conf
+    livy.keystore: $keystore
+    livy.keystore.password: $keystorepassword
+    livy.key-password: $keystorepassword
+
 DRUID:
   - config_type: druid-common
     druid.client.https.protocol: TLSv1.2
