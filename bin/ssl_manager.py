@@ -37,6 +37,7 @@ AMBARI_PEM = 'ambari-keystore.pem'
 AMBARI_CRT = 'ambari-keystore.crt'
 KEYSTORE_LOCATION = os.path.join(CERT_DIR, 'keystore.jks')
 TRUSTSTORE_LOCATION = os.path.join(CERT_DIR, 'truststore.jks')
+AMBARI_P12_LOCATION = os.path.join(CERT_DIR, 'ambari-keystore.p12')
 PEM_KEY_LOCATION = os.path.join(CERT_DIR, 'key.pem')
 PEM_CERT_LOCATION = os.path.join(CERT_DIR, 'cert.pem')
 
@@ -240,6 +241,8 @@ def update_configs_ambari(services, accessor, cluster, conf_file):
                     section[k] = KEYSTORE_LOCATION
                 elif section[k] == "$truststore":
                     section[k] = TRUSTSTORE_LOCATION
+                elif section[k] == "$ambari_p12":
+                    section[k] = AMBARI_P12_LOCATION
                 elif section[k] == "$pemKey":
                     section[k] = PEM_KEY_LOCATION
                 elif section[k] == "$pemCert":

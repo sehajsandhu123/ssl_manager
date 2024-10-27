@@ -231,9 +231,9 @@ ZEPPELIN:
 AMBARI_INFRA_SOLR:
   - config_type: infra-solr-env
     infra_solr_ssl_enabled: true
-    infra_solr_keystore_location: $keystore
+    infra_solr_keystore_location: $ambari_p12
     infra_solr_keystore_password: $keystorepassword
-    infra_solr_truststore_location: $truststore
+    infra_solr_truststore_location: $ambari_p12
     infra_solr_truststore_password: $truststorepassword
 
 RANGERADMIN:
