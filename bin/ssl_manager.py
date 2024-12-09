@@ -560,7 +560,7 @@ def parse_service(services, accessor, cluster, conf_file):
                 logger.info("Enabling SSL for {0}".format(i))
                 update_configs_ambari(i.upper(), accessor, cluster, conf_file)
         else:
-            if u_name == '':
+            #if u_name == '':
             update_configs_ambari(s_name, accessor, cluster, conf_file)
     return
 
