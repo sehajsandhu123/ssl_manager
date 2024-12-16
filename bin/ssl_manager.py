@@ -216,9 +216,9 @@ def put_configs(config):
 def get_password(properties, pwd_type):
     password = ""
     if pwd_type is "keyStorePassword":
-        password = base64.b64decode(read_conf_file(properties, "caprops", "keyStorePassword"))
+        password = base64.b64decode(read_conf_file(properties, "caprops", "keyStorePassword")).decode('utf-8')
     elif pwd_type is "trustStorePassword":
-        password = base64.b64decode(read_conf_file(properties, "caprops", "trustStorePassword"))
+        password = base64.b64decode(read_conf_file(properties, "caprops", "trustStorePassword")).decode('utf-8')
     return password
 
 
