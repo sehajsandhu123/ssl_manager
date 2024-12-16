@@ -473,7 +473,7 @@ def read_ca_conf_file(properties, section):
             ca_config = f.read()
         config = configparser.RawConfigParser()
         config.optionxform = str
-        config.readfp(io.BytesIO(ca_config))
+        config.readfp(io.StringIO(ca_config))
         for options in config.options(section):
             ca_props.append("--" + options)
             config.set(section, "keyStorePassword", keypass)
@@ -492,11 +492,11 @@ def read_conf_file(properties, section, key):
     value = ""
     if os.path.exists(properties):
         with open(properties) as f:
-            ca_config = f.read()
+            ca_config = f.read()  # ca_config is a string here
         config = configparser.RawConfigParser()
-        config.optionxform = str
-        config.readfp(io.BytesIO(ca_config))
-        value = config.get(section, key)
+        config.optionxform = str  # Ensure case-sensitive parsing
+        config.read_file(io.StringIO(ca_config))  # Use StringIO to parse the string content
+        value = config.get(section, key)  # Example key, adjust as needed
     return value
 
 

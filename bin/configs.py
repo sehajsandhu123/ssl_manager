@@ -84,12 +84,16 @@ def api_accessor(host, login, password, protocol, port):
   def do_request(api_url, request_type=GET_REQUEST_TYPE, request_body=''):
     try:
       url = '{0}://{1}:{2}{3}'.format(protocol, host, port, api_url)
-      admin_auth = base64.encodebytes('%s:%s' % (login, password)).replace('\n', '')
-      request = urllib.request.Request(url)
+      admin_auth = base64.encodebytes(('%s:%s' % (login, password)).encode('utf-8')).decode('utf-8').replace('\n', '')
+
+      request_body_bytes = request_body.encode('utf-8')
+
+      request = urllib.request.Request(url, data=request_body_bytes)
       request.add_header('Authorization', 'Basic %s' % admin_auth)
       request.add_header('X-Requested-By', 'ambari')
-      request.add_data(request_body)
-      request.get_method = lambda: request_type
+
+      if request_type != 'POST':  # POST is the default when data is present
+        request.method = request_type  # Set the HTTP method (available since Python 3.3)
       response = urllib.request.urlopen(request)
       response_body = response.read()
     except Exception as exc:
