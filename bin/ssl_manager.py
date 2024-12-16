@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import os
 import io
@@ -8,7 +8,7 @@ import json
 import glob
 import base64
 import subprocess
-import ConfigParser
+import configparser
 from optparse import OptionParser
 import configs  # configs.py from ambari
 
@@ -172,12 +172,12 @@ def read_service_configs(service_name, conf_file):
     except OSError as e:
         logger.error(e)
         return 1
-    if service_name in config.keys():
+    if service_name in list(config.keys()):
         logger.info("Reading SSL configs for service:{0}".format(service_name))
         ssl_configs = config[service_name]
     else:
         logger.warn("Unable to find SSL configs for: {0} in {1}".format(service_name, conf_file))
-        logger.warn("Available configs are: {0}".format(config.keys()))
+        logger.warn("Available configs are: {0}".format(list(config.keys())))
     #    Consider only installed ranger plugins
     if service_name == "RANGERPLUGINS":
         plugins_to_be_considered = []
@@ -185,7 +185,7 @@ def read_service_configs(service_name, conf_file):
             plugins_to_be_considered.append('ranger-'+i.lower()+'-policymgr-ssl')
         for i in ranger_ui_to_be_considered:
             plugins_to_be_considered.append('ranger-'+i.lower()+'-policymgr-ssl')
-        ssl_configs = filter(lambda plugins: plugins['config_type'] in plugins_to_be_considered, ssl_configs)
+        ssl_configs = [plugins for plugins in ssl_configs if plugins['config_type'] in plugins_to_be_considered]
     return ssl_configs
 
 
@@ -269,7 +269,7 @@ def disable_configs(service, accessor, cluster, conf_file):
 
     for section in ssl_configs:
         config_type = section['config_type']
-        keys = section.keys()
+        keys = list(section.keys())
         del section['config_type']
         if "delete" in keys:
             del section['delete']
@@ -471,7 +471,7 @@ def read_ca_conf_file(properties, section):
     if os.path.exists(properties):
         with open(properties) as f:
             ca_config = f.read()
-        config = ConfigParser.RawConfigParser()
+        config = configparser.RawConfigParser()
         config.optionxform = str
         config.readfp(io.BytesIO(ca_config))
         for options in config.options(section):
@@ -493,7 +493,7 @@ def read_conf_file(properties, section, key):
     if os.path.exists(properties):
         with open(properties) as f:
             ca_config = f.read()
-        config = ConfigParser.RawConfigParser()
+        config = configparser.RawConfigParser()
         config.optionxform = str
         config.readfp(io.BytesIO(ca_config))
         value = config.get(section, key)
@@ -777,7 +777,7 @@ def main():
     if disable is True:
         if service is not None:
             if service.upper() != "ALL":
-                services = map(str.upper, service.split(','))
+                services = list(map(str.upper, service.split(',')))
                 logger.info("Services passed through cli are: {0}".format(services))
                 services_to_be_considered = list(
                     set(ALL_SERVICES+RANGER).intersection(installed_services).intersection(services))
@@ -791,7 +791,7 @@ def main():
 
         if ui is not None:
             if ui.upper() != "ALL":
-                uis = map(str.upper, ui.split(','))
+                uis = list(map(str.upper, ui.split(',')))
                 logger.debug("UI's passed through cli are: {0}".format(uis))
                 ui_to_be_considered = list(set(ALL_UI+AMBARI).intersection(installed_services).intersection(uis))
             elif ui.upper() == "ALL":
@@ -817,7 +817,7 @@ def main():
 
         if service is not None:
             if service.upper() != "ALL":
-                services = map(str.upper, service.split(','))
+                services = list(map(str.upper, service.split(',')))
                 logger.debug("Services passed through cli are: {0}".format(services))
                 services_to_be_considered = list(
                     set(ALL_SERVICES+RANGER).intersection(installed_services).intersection(services))
@@ -833,7 +833,7 @@ def main():
 
         if ui is not None:
             if ui.upper() != "ALL":
-                uis = map(str.upper, ui.split(','))
+                uis = list(map(str.upper, ui.split(',')))
                 logger.debug("UI's passed through cli are: {0}".format(uis))
                 ui_to_be_considered = list(set(ALL_UI+AMBARI).intersection(installed_services).intersection(uis))
             elif ui.upper() == "ALL":
@@ -850,7 +850,7 @@ def main():
 if __name__ == "__main__":
     try:
         import yaml
-    except Exception, e:
+    except Exception as e:
         print("\nNeed to install PyYAML package to use yaml. E.g., yum install PyYAML")
         sys.exit(1)
     try:
