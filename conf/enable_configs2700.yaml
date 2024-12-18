@@ -236,6 +236,16 @@ AMBARI_INFRA_SOLR:
     infra_solr_truststore_location: $ambari_p12
     infra_solr_truststore_password: $truststorepassword
 
+RANGERKMS:
+  - config_type: ranger-kms-site
+    ranger.service.https.attrib.client.auth: want
+    ranger.service.https.attrib.keystore.credential.alias: keyStoreCredentialAlias
+    ranger.service.https.attrib.keystore.file: $keystore
+    ranger.service.https.attrib.keystore.keyalias: nifi-cert
+    ranger.service.https.attrib.keystore.pass: $keystorepassword
+    ranger.service.https.attrib.ssl.enabled: true
+    ranger.service.https.port: 9393
+    
 RANGERADMIN:
   - config_type: ranger-admin-site
     ranger.service.http.enabled: false
