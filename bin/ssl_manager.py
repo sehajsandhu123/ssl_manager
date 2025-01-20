@@ -393,8 +393,6 @@ def execute_remote_commands(ssh_key, userhost, export_command, delete_command_ca
     except Exception as e:
         logger.error("Failed to execute commands on host {0}: {1}".format(userhost, str(e)))
 
-
-
 def copy_certs(properties, ssh_key, scpusername, ownership):
     opdir = os.path.abspath(read_conf_file(properties, "caprops", "outputDirectory"))
     host_list = read_conf_file(properties, "caprops", "hostnames")
@@ -408,54 +406,53 @@ def copy_certs(properties, ssh_key, scpusername, ownership):
         scp_command = "scp -o StrictHostKeyChecking=no -i " + ssh_key + " " + source + " " + dest
 
         logger.info("Creating cert dir {0} in host {1}".format(CERT_DIR, host))
-        subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'mkdir', '-p', CERT_DIR]).communicate()
+        # Split the command correctly: sudo su -c 'mkdir -p <CERT_DIR>'
+        sudo_command = ["sudo", "su", "-c", f"mkdir -p {CERT_DIR}"]
+        subprocess.Popen(["ssh", "-o", "StrictHostKeyChecking=no", "-i", ssh_key, userhost] + sudo_command).communicate()
 
         logger.info("Copying certs to host {0}".format(host))
         subprocess.Popen(scp_command, shell=True).communicate()
 
         logger.info("Changing the permissions..")
-        subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'chmod', '-R', '750', CERT_DIR]).communicate()
+        # Similarly, ensure proper splitting for chmod and chown
+        subprocess.Popen(["ssh", "-o", "StrictHostKeyChecking=no", "-i", ssh_key, userhost] + ["sudo", "su", "-c", f"chmod -R 750 {CERT_DIR}"]).communicate()
 
         logger.info("Changing the ownership of certificates..")
-        subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'chown', '-R', ownership, CERT_DIR]).communicate()
+        subprocess.Popen(["ssh", "-o", "StrictHostKeyChecking=no", "-i", ssh_key, userhost] + ["sudo", "su", "-c", f"chown -R {ownership} {CERT_DIR}"]).communicate()
 
-        create_pkcs12 = "keytool -importkeystore -srckeystore " + CERT_DIR + "keystore.jks -destkeystore " + CERT_DIR + "keystore.p12 -srcstoretype jks -deststoretype pkcs12 -srcstorepass " + keystorepassword + " -deststorepass " + keystorepassword + " -destkeypass " + keystorepassword + " -alias nifi-cert"
+        create_pkcs12 = f"sudo su -c 'keytool -importkeystore -srckeystore {CERT_DIR}keystore.jks -destkeystore {CERT_DIR}keystore.p12 -srcstoretype jks -deststoretype pkcs12 -srcstorepass {keystorepassword} -deststorepass {keystorepassword} -destkeypass {keystorepassword} -alias nifi-cert'"
+        create_pem_key = f"sudo su -c 'openssl pkcs12 -in {CERT_DIR}keystore.p12 -nocerts -out {CERT_DIR}key.pem -nodes -passin pass:{keystorepassword} && chmod o+rwx {CERT_DIR}key.pem'"
+        create_pem_cert = f"sudo su -c 'openssl pkcs12 -in {CERT_DIR}keystore.p12 -nokeys -out {CERT_DIR}cert.pem -passin pass:{keystorepassword} && chmod o+rwx {CERT_DIR}cert.pem'"
 
-        create_pem_key = "openssl pkcs12 -in  " + CERT_DIR + "keystore.p12  -nocerts -out  " + CERT_DIR + "key.pem -nodes -passin pass: " + keystorepassword + " && chmod o+rwx " + CERT_DIR + "key.pem"
-
-        create_pem_cert = "openssl pkcs12 -in  " + CERT_DIR + "keystore.p12  -nokeys -out  " + CERT_DIR + "cert.pem -passin pass: " + keystorepassword  + " && chmod o+rwx " + CERT_DIR + "cert.pem"
-
-        # Determine the OS type dynamically
+        # Execute remote commands for the OS type
         os_type = get_remote_os_type(ssh_key, userhost)
-
 
         if os_type:
             if os_type == 'ubuntu':
                 logger.info("Running keytool commands for Ubuntu...")
-                export_command = "keytool -exportcert -alias nifi-cert -keystore " + CERT_DIR + "truststore.jks -file /tmp/mycert.crt -storepass " + truststorepassword + " -noprompt"
-                delete_command_cacerts = "keytool -delete -alias nifi-cert -keystore /etc/ssl/certs/java/cacerts -storepass changeit"
-                delete_command_ambari = "keytool -delete -alias nifi-cert -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit"
+                export_command = f"sudo su -c 'keytool -exportcert -alias nifi-cert -keystore {CERT_DIR}truststore.jks -file /tmp/mycert.crt -storepass {truststorepassword} -noprompt'"
+                delete_command_cacerts = f"sudo su -c 'keytool -delete -alias nifi-cert -keystore /etc/ssl/certs/java/cacerts -storepass changeit'"
+                delete_command_ambari = f"sudo su -c 'keytool -delete -alias nifi-cert -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit'"
 
-                import_command_cacerts = "keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ssl/certs/java/cacerts -storepass changeit -noprompt"
-
-                import_command_ambari = "keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit -noprompt"
+                import_command_cacerts = f"sudo su -c 'keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ssl/certs/java/cacerts -storepass changeit -noprompt'"
+                import_command_ambari = f"sudo su -c 'keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit -noprompt'"
 
             elif os_type in ['rhel', 'centos', 'rocky']:
                 logger.info("Running keytool commands for Rocky Linux or RHEL...")
-                export_command = "keytool -exportcert -alias nifi-cert -keystore /etc/security/certificates/truststore.jks -file /tmp/mycert.crt -storepass Hadoop@123 -noprompt"
-                delete_command_cacerts = "keytool -delete -alias nifi-cert -keystore /etc/pki/ca-trust/extracted/java/cacerts -storepass changeit"
-                delete_command_ambari = "keytool -delete -alias nifi-cert -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit"
+                export_command = f"sudo su -c 'keytool -exportcert -alias nifi-cert -keystore /etc/security/certificates/truststore.jks -file /tmp/mycert.crt -storepass Hadoop@123 -noprompt'"
+                delete_command_cacerts = f"sudo su -c 'keytool -delete -alias nifi-cert -keystore /etc/pki/ca-trust/extracted/java/cacerts -storepass changeit'"
+                delete_command_ambari = f"sudo su -c 'keytool -delete -alias nifi-cert -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit'"
 
-                import_command_cacerts = "keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/pki/ca-trust/extracted/java/cacerts -storepass changeit -noprompt"
-                import_command_ambari = "keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit -noprompt"
+                import_command_cacerts = f"sudo su -c 'keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/pki/ca-trust/extracted/java/cacerts -storepass changeit -noprompt'"
+                import_command_ambari = f"sudo su -c 'keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit -noprompt'"
 
             # Execute the remote commands
             execute_remote_commands(ssh_key, userhost, export_command, delete_command_cacerts, delete_command_ambari, import_command_cacerts, import_command_ambari, create_pkcs12, create_pem_key, create_pem_cert)
         else:
             logger.error("Could not determine OS type for host {0}. Skipping keytool operations.".format(userhost))
 
-
     return
+
 
 
 
