@@ -308,29 +308,51 @@ def disable_configs(service, accessor, cluster, conf_file):
     return
 
 
+# def copy_certs(properties, ssh_key, scpusername, ownership):
+#     opdir = os.path.abspath(read_conf_file(properties, "caprops", "outputDirectory"))
+#     host_list = read_conf_file(properties, "caprops", "hostnames")
+#     ssh_key = os.path.expanduser(ssh_key)
+#     for host in host_list.split(','):
+#         logger.info(host)
+#         source = os.path.join(opdir, host)+'/*'
+#         dest = scpusername + '@' + host + ':' + CERT_DIR + '/'
+#         userhost = scpusername + '@' + host
+#         scp_command = "scp -o StrictHostKeyChecking=no -i " + ssh_key + " " + source + " "+dest
+#         logger.info("Creating cert dir {0} in host {1}".format(CERT_DIR, host))
+#         subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'mkdir', '-p',
+#                           CERT_DIR]).communicate()
+#         logger.info("Copying certs to host {0}".format(host))
+#         subprocess.Popen(scp_command, shell=True).communicate()
+#         logger.info("Changing the permissions..")
+#         subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'chmod', '-R', '750',
+#                           CERT_DIR]).communicate()
+#         logger.info("Changing the ownership of certificates..")
+#         subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'chown', '-R', ownership,
+#                          CERT_DIR]).communicate()
+#     return
+
 def copy_certs(properties, ssh_key, scpusername, ownership):
     opdir = os.path.abspath(read_conf_file(properties, "caprops", "outputDirectory"))
     host_list = read_conf_file(properties, "caprops", "hostnames")
     ssh_key = os.path.expanduser(ssh_key)
-    for host in host_list.split(','):
-        logger.info(host)
-        source = os.path.join(opdir, host)+'/*'
-        dest = scpusername + '@' + host + ':' + CERT_DIR + '/'
-        userhost = scpusername + '@' + host
-        scp_command = "scp -o StrictHostKeyChecking=no -i " + ssh_key + " " + source + " "+dest
-        logger.info("Creating cert dir {0} in host {1}".format(CERT_DIR, host))
-        subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'mkdir', '-p',
-                          CERT_DIR]).communicate()
-        logger.info("Copying certs to host {0}".format(host))
-        subprocess.Popen(scp_command, shell=True).communicate()
-        logger.info("Changing the permissions..")
-        subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'chmod', '-R', '750',
-                          CERT_DIR]).communicate()
-        logger.info("Changing the ownership of certificates..")
-        subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'chown', '-R', ownership,
-                         CERT_DIR]).communicate()
-    return
 
+    for host in host_list.split(','):
+        logger.info(f"Processing host: {host}")
+        source = os.path.join(opdir, host)+'/*'
+        dest = f"{scpusername}@{host}:{CERT_DIR}/"
+        userhost = f"{scpusername}@{host}"
+        # SCP command to copy files
+        scp_command = f"scp -o StrictHostKeyChecking=no -i {ssh_key} {source} {dest}"
+        # SSH command to switch to root using sudo su and then run commands
+        ssh_command = f"sudo su -c 'mkdir -p {CERT_DIR} && {scp_command} && chmod -R 750 {CERT_DIR} && chown -R {ownership} {CERT_DIR}'"
+        try:
+            # Create cert dir and copy certs using sudo su to root on the remote host
+            logger.info(f"Creating cert dir {CERT_DIR} and copying certs to host {host}")
+            subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, ssh_command]).communicate()
+        except Exception as e:
+            logger.error(f"Error occurred while processing host {host}: {e}")
+            continue
+    return
 
 def read_ca_conf_file(properties, section):
     """
