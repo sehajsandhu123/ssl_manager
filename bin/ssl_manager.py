@@ -326,72 +326,155 @@ def get_remote_os_type(ssh_key, userhost):
     except Exception as e:
         logger.error("Exception occurred: {0}".format(str(e)))
         return None
+#
+#
+# def execute_remote_commands(ssh_key, userhost, export_command, delete_command_cacerts, delete_command_ambari,import_command_cacerts, import_command_ambari, create_pkcs12, create_pem_key, create_pem_cert):
+#     try:
+#         # Execute export cert command
+#         logger.info("Exporting cert from truststore on host {0}".format(userhost))
+#         subprocess.Popen(
+#             "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, export_command),
+#             shell=True
+#         ).communicate()
+#
+#
+#         # Delete existing cert in cacerts if it exists
+#         logger.info("Deleting existing cert from cacerts on host {0}".format(userhost))
+#         subprocess.Popen(
+#             "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, delete_command_cacerts),
+#             shell=True
+#         ).communicate()
+#
+#         # Delete existing cert in Ambari truststore if it exists
+#         logger.info("Deleting existing cert from Ambari truststore on host {0}".format(userhost))
+#         subprocess.Popen(
+#             "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, delete_command_ambari),
+#             shell=True
+#         ).communicate()
+#
+#         # Execute import cert command for cacerts
+#         logger.info("Importing cert into cacerts on host {0}".format(userhost))
+#         subprocess.Popen(
+#             "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, import_command_cacerts),
+#             shell=True
+#         ).communicate()
+#
+#         # Execute import cert command for Ambari truststore
+#         logger.info("Importing cert into Ambari truststore on host {0}".format(userhost))
+#         subprocess.Popen(
+#             "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, import_command_ambari),
+#             shell=True
+#         ).communicate()
+#
+#
+#         # Create pkcs12 file to extract key and cert for impala, airflow ssl
+#         logger.info("Create pkcs12 file on host {0}".format(userhost))
+#         subprocess.Popen(
+#             "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, create_pkcs12),
+#             shell=True
+#         ).communicate()
+#
+#
+#         # Create pem key file for SSL enablement
+#         logger.info("Create pem key file on host {0}".format(userhost))
+#         subprocess.Popen(
+#             "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, create_pem_key),
+#             shell=True
+#         ).communicate()
+#
+#
+#         # Create pem cert file for SSL enablement
+#         logger.info("Create pem cert file on host {0}".format(userhost))
+#         subprocess.Popen(
+#             "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, create_pem_cert),
+#             shell=True
+#         ).communicate()
+#
+#     except Exception as e:
+#         logger.error("Failed to execute commands on host {0}: {1}".format(userhost, str(e)))
+#
+# def copy_certs(properties, ssh_key, scpusername, ownership):
+#     opdir = os.path.abspath(read_conf_file(properties, "caprops", "outputDirectory"))
+#     host_list = read_conf_file(properties, "caprops", "hostnames")
+#     ssh_key = os.path.expanduser(ssh_key)
+#
+#     for host in host_list.split(','):
+#         logger.info(host)
+#         source = os.path.join(opdir, host) + '/*'
+#         dest = scpusername + '@' + host + ':' + CERT_DIR + '/'
+#         userhost = scpusername + '@' + host
+#         scp_command = "scp -o StrictHostKeyChecking=no -i " + ssh_key + " " + source + " " + dest
+#
+#         logger.info("Creating cert dir {0} in host {1}".format(CERT_DIR, host))
+#         # Split the command correctly: sudo su -c 'mkdir -p <CERT_DIR>'
+#         sudo_command = ["sudo", "su", "-c", f"mkdir -p {CERT_DIR}"]
+#         subprocess.Popen(["ssh", "-o", "StrictHostKeyChecking=no", "-i", ssh_key, userhost] + sudo_command).communicate()
+#
+#         logger.info("Copying certs to host {0}".format(host))
+#         subprocess.Popen(scp_command, shell=True).communicate()
+#
+#         logger.info("Changing the permissions..")
+#         # Similarly, ensure proper splitting for chmod and chown
+#         subprocess.Popen(["ssh", "-o", "StrictHostKeyChecking=no", "-i", ssh_key, userhost] + ["sudo", "su", "-c", f"chmod -R 750 {CERT_DIR}"]).communicate()
+#
+#         logger.info("Changing the ownership of certificates..")
+#         subprocess.Popen(["ssh", "-o", "StrictHostKeyChecking=no", "-i", ssh_key, userhost] + ["sudo", "su", "-c", f"chown -R {ownership} {CERT_DIR}"]).communicate()
+#
+#         create_pkcs12 = f"sudo su -c 'keytool -importkeystore -srckeystore {CERT_DIR}keystore.jks -destkeystore {CERT_DIR}keystore.p12 -srcstoretype jks -deststoretype pkcs12 -srcstorepass {keystorepassword} -deststorepass {keystorepassword} -destkeypass {keystorepassword} -alias nifi-cert'"
+#         create_pem_key = f"sudo su -c 'openssl pkcs12 -in {CERT_DIR}keystore.p12 -nocerts -out {CERT_DIR}key.pem -nodes -passin pass:{keystorepassword} && chmod o+rwx {CERT_DIR}key.pem'"
+#         create_pem_cert = f"sudo su -c 'openssl pkcs12 -in {CERT_DIR}keystore.p12 -nokeys -out {CERT_DIR}cert.pem -passin pass:{keystorepassword} && chmod o+rwx {CERT_DIR}cert.pem'"
+#
+#         # Execute remote commands for the OS type
+#         os_type = get_remote_os_type(ssh_key, userhost)
+#
+#         if os_type:
+#             if os_type == 'ubuntu':
+#                 logger.info("Running keytool commands for Ubuntu...")
+#                 export_command = f"sudo su -c 'keytool -exportcert -alias nifi-cert -keystore {CERT_DIR}truststore.jks -file /tmp/mycert.crt -storepass {truststorepassword} -noprompt'"
+#                 delete_command_cacerts = f"sudo su -c 'keytool -delete -alias nifi-cert -keystore /etc/ssl/certs/java/cacerts -storepass changeit'"
+#                 delete_command_ambari = f"sudo su -c 'keytool -delete -alias nifi-cert -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit'"
+#
+#                 import_command_cacerts = f"sudo su -c 'keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ssl/certs/java/cacerts -storepass changeit -noprompt'"
+#                 import_command_ambari = f"sudo su -c 'keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit -noprompt'"
+#
+#             elif os_type in ['rhel', 'centos', 'rocky']:
+#                 logger.info("Running keytool commands for Rocky Linux or RHEL...")
+#                 export_command = f"sudo su -c 'keytool -exportcert -alias nifi-cert -keystore /etc/security/certificates/truststore.jks -file /tmp/mycert.crt -storepass Hadoop@123 -noprompt'"
+#                 delete_command_cacerts = f"sudo su -c 'keytool -delete -alias nifi-cert -keystore /etc/pki/ca-trust/extracted/java/cacerts -storepass changeit'"
+#                 delete_command_ambari = f"sudo su -c 'keytool -delete -alias nifi-cert -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit'"
+#
+#                 import_command_cacerts = f"sudo su -c 'keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/pki/ca-trust/extracted/java/cacerts -storepass changeit -noprompt'"
+#                 import_command_ambari = f"sudo su -c 'keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit -noprompt'"
+#
+#             # Execute the remote commands
+#             execute_remote_commands(ssh_key, userhost, export_command, delete_command_cacerts, delete_command_ambari, import_command_cacerts, import_command_ambari, create_pkcs12, create_pem_key, create_pem_cert)
+#         else:
+#             logger.error("Could not determine OS type for host {0}. Skipping keytool operations.".format(userhost))
+#
+#     return
+#
 
 
-def execute_remote_commands(ssh_key, userhost, export_command, delete_command_cacerts, delete_command_ambari,import_command_cacerts, import_command_ambari, create_pkcs12, create_pem_key, create_pem_cert):
+# Helper method to execute shell commands
+def exec_shell_command(command, shell=False):
     try:
-        # Execute export cert command
-        logger.info("Exporting cert from truststore on host {0}".format(userhost))
-        subprocess.Popen(
-            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, export_command), 
-            shell=True
-        ).communicate()
+        logger.info("Executing command: %s", command)
+        result = subprocess.run(command, shell=shell, check=True, text=True, capture_output=True)
+        logger.info("Command output: %s", result.stdout)
+        return result.stdout
+    except subprocess.CalledProcessError as e:
+        logger.error("Command failed with error: %s", e.stderr)
+        raise
 
 
-        # Delete existing cert in cacerts if it exists
-        logger.info("Deleting existing cert from cacerts on host {0}".format(userhost))
-        subprocess.Popen(
-            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, delete_command_cacerts), 
-            shell=True
-        ).communicate()
-
-        # Delete existing cert in Ambari truststore if it exists
-        logger.info("Deleting existing cert from Ambari truststore on host {0}".format(userhost))
-        subprocess.Popen(
-            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, delete_command_ambari), 
-            shell=True
-        ).communicate()
-
-        # Execute import cert command for cacerts
-        logger.info("Importing cert into cacerts on host {0}".format(userhost))
-        subprocess.Popen(
-            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, import_command_cacerts), 
-            shell=True
-        ).communicate()
-
-        # Execute import cert command for Ambari truststore
-        logger.info("Importing cert into Ambari truststore on host {0}".format(userhost))
-        subprocess.Popen(
-            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, import_command_ambari), 
-            shell=True
-        ).communicate()
-
-
-        # Create pkcs12 file to extract key and cert for impala, airflow ssl
-        logger.info("Create pkcs12 file on host {0}".format(userhost))
-        subprocess.Popen(
-            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, create_pkcs12),
-            shell=True
-        ).communicate()
-
-
-        # Create pem key file for SSL enablement
-        logger.info("Create pem key file on host {0}".format(userhost))
-        subprocess.Popen(
-            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, create_pem_key),
-            shell=True
-        ).communicate()
-
-
-        # Create pem cert file for SSL enablement
-        logger.info("Create pem cert file on host {0}".format(userhost))
-        subprocess.Popen(
-            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, create_pem_cert),
-            shell=True
-        ).communicate()
-
+def execute_remote_commands(ssh_key, userhost, commands):
+    try:
+        for description, command in commands.items():
+            logger.info(description)
+            exec_shell_command(f"ssh -o StrictHostKeyChecking=no -i {ssh_key} {userhost} \"sudo su -c \"{command}\"\"", shell=True)
     except Exception as e:
-        logger.error("Failed to execute commands on host {0}: {1}".format(userhost, str(e)))
+        logger.error("Failed to execute commands on host %s: %s", userhost, str(e))
+
 
 def copy_certs(properties, ssh_key, scpusername, ownership):
     opdir = os.path.abspath(read_conf_file(properties, "caprops", "outputDirectory"))
@@ -399,60 +482,61 @@ def copy_certs(properties, ssh_key, scpusername, ownership):
     ssh_key = os.path.expanduser(ssh_key)
 
     for host in host_list.split(','):
-        logger.info(host)
+        logger.info("Processing host: %s", host)
         source = os.path.join(opdir, host) + '/*'
-        dest = scpusername + '@' + host + ':' + CERT_DIR + '/'
-        userhost = scpusername + '@' + host
-        scp_command = "scp -o StrictHostKeyChecking=no -i " + ssh_key + " " + source + " " + dest
+        dest = f"{scpusername}@{host}:{CERT_DIR}/"
+        userhost = f"{scpusername}@{host}"
 
-        logger.info("Creating cert dir {0} in host {1}".format(CERT_DIR, host))
-        # Split the command correctly: sudo su -c 'mkdir -p <CERT_DIR>'
-        sudo_command = ["sudo", "su", "-c", f"mkdir -p {CERT_DIR}"]
-        subprocess.Popen(["ssh", "-o", "StrictHostKeyChecking=no", "-i", ssh_key, userhost] + sudo_command).communicate()
+        try:
+            # Create cert directory
+            exec_shell_command(["ssh", "-o", "StrictHostKeyChecking=no", "-i", ssh_key, userhost, "sudo", "su", "-c", f"mkdir -p {CERT_DIR}"])
 
-        logger.info("Copying certs to host {0}".format(host))
-        subprocess.Popen(scp_command, shell=True).communicate()
+            # Copy certificates
+            scp_command = f"scp -o StrictHostKeyChecking=no -i {ssh_key} {source} {dest}"
+            exec_shell_command(scp_command, shell=True)
 
-        logger.info("Changing the permissions..")
-        # Similarly, ensure proper splitting for chmod and chown
-        subprocess.Popen(["ssh", "-o", "StrictHostKeyChecking=no", "-i", ssh_key, userhost] + ["sudo", "su", "-c", f"chmod -R 750 {CERT_DIR}"]).communicate()
+            # Update permissions
+            exec_shell_command(["ssh", "-o", "StrictHostKeyChecking=no", "-i", ssh_key, userhost, "sudo", "su", "-c", f"chmod -R 750 {CERT_DIR}"])
 
-        logger.info("Changing the ownership of certificates..")
-        subprocess.Popen(["ssh", "-o", "StrictHostKeyChecking=no", "-i", ssh_key, userhost] + ["sudo", "su", "-c", f"chown -R {ownership} {CERT_DIR}"]).communicate()
+            # Update ownership
+            exec_shell_command(["ssh", "-o", "StrictHostKeyChecking=no", "-i", ssh_key, userhost, "sudo", "su", "-c", f"chown -R {ownership} {CERT_DIR}"])
 
-        create_pkcs12 = f"sudo su -c 'keytool -importkeystore -srckeystore {CERT_DIR}keystore.jks -destkeystore {CERT_DIR}keystore.p12 -srcstoretype jks -deststoretype pkcs12 -srcstorepass {keystorepassword} -deststorepass {keystorepassword} -destkeypass {keystorepassword} -alias nifi-cert'"
-        create_pem_key = f"sudo su -c 'openssl pkcs12 -in {CERT_DIR}keystore.p12 -nocerts -out {CERT_DIR}key.pem -nodes -passin pass:{keystorepassword} && chmod o+rwx {CERT_DIR}key.pem'"
-        create_pem_cert = f"sudo su -c 'openssl pkcs12 -in {CERT_DIR}keystore.p12 -nokeys -out {CERT_DIR}cert.pem -passin pass:{keystorepassword} && chmod o+rwx {CERT_DIR}cert.pem'"
+            create_pkcs12 = f"keytool -importkeystore -srckeystore {CERT_DIR}keystore.jks -destkeystore {CERT_DIR}keystore.p12 -srcstoretype jks -deststoretype pkcs12 -srcstorepass {keystorepassword} -deststorepass {keystorepassword} -destkeypass {keystorepassword} -alias nifi-cert"
+            create_pem_key = f"openssl pkcs12 -in {CERT_DIR}keystore.p12 -nocerts -out {CERT_DIR}key.pem -nodes -passin pass:{keystorepassword} && chmod o+rwx {CERT_DIR}key.pem"
+            create_pem_cert = f"openssl pkcs12 -in {CERT_DIR}keystore.p12 -nokeys -out {CERT_DIR}cert.pem -passin pass:{keystorepassword} && chmod o+rwx {CERT_DIR}cert.pem"
 
-        # Execute remote commands for the OS type
-        os_type = get_remote_os_type(ssh_key, userhost)
+            os_type = get_remote_os_type(ssh_key, userhost)
 
-        if os_type:
             if os_type == 'ubuntu':
-                logger.info("Running keytool commands for Ubuntu...")
-                export_command = f"sudo su -c 'keytool -exportcert -alias nifi-cert -keystore {CERT_DIR}truststore.jks -file /tmp/mycert.crt -storepass {truststorepassword} -noprompt'"
-                delete_command_cacerts = f"sudo su -c 'keytool -delete -alias nifi-cert -keystore /etc/ssl/certs/java/cacerts -storepass changeit'"
-                delete_command_ambari = f"sudo su -c 'keytool -delete -alias nifi-cert -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit'"
-
-                import_command_cacerts = f"sudo su -c 'keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ssl/certs/java/cacerts -storepass changeit -noprompt'"
-                import_command_ambari = f"sudo su -c 'keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit -noprompt'"
+                commands = {
+                    "Exporting cert from truststore": f"keytool -exportcert -alias nifi-cert -keystore {CERT_DIR}truststore.jks -file /tmp/mycert.crt -storepass {truststorepassword} -noprompt",
+                    "Deleting cert from cacerts": f"keytool -delete -alias nifi-cert -keystore /etc/ssl/certs/java/cacerts -storepass changeit",
+                    "Deleting cert from Ambari truststore": f"keytool -delete -alias nifi-cert -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit",
+                    "Importing cert into cacerts": f"keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ssl/certs/java/cacerts -storepass changeit -noprompt",
+                    "Importing cert into Ambari truststore": f"keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit -noprompt",
+                    "Creating PKCS12 file": create_pkcs12,
+                    "Creating PEM key": create_pem_key,
+                    "Creating PEM cert": create_pem_cert
+                }
 
             elif os_type in ['rhel', 'centos', 'rocky']:
-                logger.info("Running keytool commands for Rocky Linux or RHEL...")
-                export_command = f"sudo su -c 'keytool -exportcert -alias nifi-cert -keystore /etc/security/certificates/truststore.jks -file /tmp/mycert.crt -storepass Hadoop@123 -noprompt'"
-                delete_command_cacerts = f"sudo su -c 'keytool -delete -alias nifi-cert -keystore /etc/pki/ca-trust/extracted/java/cacerts -storepass changeit'"
-                delete_command_ambari = f"sudo su -c 'keytool -delete -alias nifi-cert -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit'"
+                commands = {
+                    "Exporting cert from truststore": f"keytool -exportcert -alias nifi-cert -keystore /etc/security/certificates/truststore.jks -file /tmp/mycert.crt -storepass Hadoop@123 -noprompt",
+                    "Deleting cert from cacerts": f"keytool -delete -alias nifi-cert -keystore /etc/pki/ca-trust/extracted/java/cacerts -storepass changeit",
+                    "Deleting cert from Ambari truststore": f"keytool -delete -alias nifi-cert -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit",
+                    "Importing cert into cacerts": f"keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/pki/ca-trust/extracted/java/cacerts -storepass changeit -noprompt",
+                    "Importing cert into Ambari truststore": f"keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit -noprompt",
+                    "Creating PKCS12 file": create_pkcs12,
+                    "Creating PEM key": create_pem_key,
+                    "Creating PEM cert": create_pem_cert
+                }
 
-                import_command_cacerts = f"sudo su -c 'keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/pki/ca-trust/extracted/java/cacerts -storepass changeit -noprompt'"
-                import_command_ambari = f"sudo su -c 'keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit -noprompt'"
+            execute_remote_commands(ssh_key, userhost, commands)
 
-            # Execute the remote commands
-            execute_remote_commands(ssh_key, userhost, export_command, delete_command_cacerts, delete_command_ambari, import_command_cacerts, import_command_ambari, create_pkcs12, create_pem_key, create_pem_cert)
-        else:
-            logger.error("Could not determine OS type for host {0}. Skipping keytool operations.".format(userhost))
+        except Exception as e:
+            logger.error("Failed to process host %s: %s", host, str(e))
 
     return
-
 
 
 
