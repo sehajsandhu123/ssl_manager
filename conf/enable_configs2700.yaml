@@ -159,6 +159,7 @@ OZONE:
   - config_type: ozone-site
     ozone.https.client.keystore.resource: ssl-client.xml
     ozone.https.server.keystore.resource: ssl-client.xml
+    ozone.http.policy: HTTPS_ONLY
 
 
 CRUISE_CONTROL:
