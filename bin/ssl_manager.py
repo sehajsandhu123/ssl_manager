@@ -382,13 +382,7 @@ def execute_remote_commands(ssh_key, userhost, export_command, delete_command_ca
             shell=True
         ).communicate()
 
-        # Print and log the exit status
-        exit_code = process.returncode
-        logger.info("Command exited with status: %d", exit_code)
-        print("Command exited with status:", exit_code)
-
-
-
+        
         # Create pem cert file for SSL enablement
         logger.info("Create pem cert file on host {0}".format(userhost))
         subprocess.Popen(
