@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.11
-
+import platform
+import re
 import os
 import io
 import sys
@@ -142,7 +143,7 @@ def generate_ambari_specific(properties, host, outputdirectory):
     createcrt = ['openssl', 'x509', '-in', ambari_pem, '-out', ambari_crt]
     
     # Use '-legacy' only if OS version is **above Rocky 8 or Ubuntu 20**
-    use_legacy_flag = (os_type in ['rocky', 'rhel'] and os_version >= 9) or (os_type == 'ubuntu' and os_version >= 22)
+    use_legacy_flag = (os_type in ['10', '9'] and os_version >= 9) or (os_type in ['24','22','23'] and os_version >= 22)
 
     if use_legacy_flag:
         createpem.insert(2, '-legacy')  # Add '-legacy' flag at correct position
@@ -186,7 +187,7 @@ def get_os_version():
 
             os_type = os_type_match.group(1) if os_type_match else "unknown"
             os_version = float(os_version_match.group(1)) if os_version_match else 0.0
-
+            logger.info("OS VERSION of this machine:  {0}...{1}".format(os_type,os_version))
             return os_type, os_version
     except Exception as e:
         logger.error(f"Failed to determine OS version: {e}")
@@ -438,7 +439,8 @@ def copy_certs(properties, ssh_key, scpusername, ownership):
 
         os_type, os_version = get_os_version()
         # Use '-legacy' only if OS version is **above Rocky 8 or Ubuntu 20**
-        use_legacy_flag = (os_type in ['rocky', 'rhel'] and os_version >= 9) or (os_type == 'ubuntu' and os_version >= 22)
+        use_legacy_flag = (os_type in ['10', '9'] and os_version >= 9) or (os_type in ['24','22','23'] and os_version >= 22)
+
         legacy_option = "-legacy" if use_legacy_flag else ""
 
         logger.info("Creating cert dir {0} in host {1}".format(CERT_DIR, host))
