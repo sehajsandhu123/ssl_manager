@@ -137,7 +137,7 @@ def generate_ambari_specific(properties, host, outputdirectory):
 
     createp12 = [keytool, '-importkeystore', '-srckeystore', ambari_keystore,
                  '-destkeystore', ambari_p12, '-srcstoretype', 'jks',
-                 '-deststoretype', 'pkcs12', '-srcstorepass', keystorepassword, '-deststorepass', keystorepassword]
+                 '-deststoretype', 'pkcs12', '-srcstorepass', keystorepassword.strip(), '-deststorepass', keystorepassword]
     createpem = ['openssl', 'pkcs12', '-in', ambari_p12, '-out', ambari_pem, '-passin',
                  'pass:'+keystorepassword, '-passout', 'pass:'+keystorepassword]
     createcrt = ['openssl', 'x509', '-in', ambari_pem, '-out', ambari_crt]
@@ -408,6 +408,7 @@ def execute_remote_commands(ssh_key, userhost, export_command, delete_command_ca
 
         # Create pem key file for SSL enablement
         logger.info("Create pem key file on host {0}".format(userhost))
+        logger.info("cmd for PEM : {0}".format(create_pem_key))
         subprocess.Popen(
             "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, create_pem_key),
             shell=True
@@ -415,6 +416,7 @@ def execute_remote_commands(ssh_key, userhost, export_command, delete_command_ca
 
         # Create pem cert file for SSL enablement
         logger.info("Create pem cert file on host {0}".format(userhost))
+        logger.info("cmd for PEM : {0}".format(create_pem_cert))
         subprocess.Popen(
             "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, create_pem_cert),
             shell=True
@@ -457,9 +459,10 @@ def copy_certs(properties, ssh_key, scpusername, ownership):
 
         create_pkcs12 = "keytool -importkeystore -srckeystore " + CERT_DIR + '/' + "keystore.jks -destkeystore " + CERT_DIR + '/' + "keystore.p12 -srcstoretype jks -deststoretype pkcs12 -srcstorepass " + keystorepassword + " -deststorepass " + keystorepassword + " -destkeypass " + keystorepassword + " -alias nifi-cert"
 
-        create_pem_key = "openssl pkcs12 {legacy_option} -in  " + CERT_DIR + '/' + "keystore.p12  -nocerts -out  " + CERT_DIR + '/' + "key.pem -nodes -passin pass:" + keystorepassword + " && chmod o+rwx " + CERT_DIR + '/' + "key.pem"
+        create_pem_key = "openssl pkcs12 {0} -in {1}/keystore.p12 -nocerts -out {1}/key.pem -nodes -passin pass:{2} && chmod o+rwx {1}/key.pem".format(legacy_option, CERT_DIR, keystorepassword.strip())
 
-        create_pem_cert = "openssl pkcs12 {legacy_option} -in  " + CERT_DIR + '/' + "keystore.p12  -nokeys -out  " + CERT_DIR + '/' + "cert.pem -passin pass:" + keystorepassword  + " && chmod o+rwx " + CERT_DIR + '/' + "cert.pem"
+        create_pem_cert = "openssl pkcs12 {0} -in {1}/keystore.p12 -nokeys -out {1}/cert.pem -passin pass:{2} && chmod o+rwx {1}/cert.pem".format(legacy_option, CERT_DIR, keystorepassword.strip())
+
 
         # Determine the OS type dynamically
         os_type = get_remote_os_type(ssh_key, userhost)
