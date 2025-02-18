@@ -421,9 +421,9 @@ def copy_certs(properties, ssh_key, scpusername, ownership):
 
         create_pkcs12 = "keytool -importkeystore -srckeystore " + CERT_DIR + '/' + "keystore.jks -destkeystore " + CERT_DIR + '/' + "keystore.p12 -srcstoretype jks -deststoretype pkcs12 -srcstorepass " + keystorepassword + " -deststorepass " + keystorepassword + " -destkeypass " + keystorepassword + " -alias nifi-cert"
 
-        create_pem_key = "openssl pkcs12 -legacy -in  " + CERT_DIR + '/' + "keystore.p12  -nocerts -out  " + CERT_DIR + '/' + "key.pem -nodes -passin pass:" + keystorepassword + " && chmod o+rwx " + CERT_DIR + '/' + "key.pem"
+        create_pem_key = "openssl pkcs12 -legacy -in  " + CERT_DIR + '/' + "keystore.p12  -nocerts -out  " + CERT_DIR + '/' + "key.pem -nodes -passin pass:" + keystorepassword + " && chmod 777 " + CERT_DIR + '/' + "key.pem"
 
-        create_pem_cert = "openssl pkcs12 -legacy -in  " + CERT_DIR + '/' + "keystore.p12  -nokeys -out  " + CERT_DIR + '/' + "cert.pem -passin pass:" + keystorepassword  + " && chmod o+rwx " + CERT_DIR + '/' + "cert.pem"
+        create_pem_cert = "openssl pkcs12 -legacy -in  " + CERT_DIR + '/' + "keystore.p12  -nokeys -out  " + CERT_DIR + '/' + "cert.pem -passin pass:" + keystorepassword  + " && chmod 777 " + CERT_DIR + '/' + "cert.pem"
 
         # Determine the OS type dynamically
         os_type = get_remote_os_type(ssh_key, userhost)
