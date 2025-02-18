@@ -839,9 +839,9 @@ def main():
 
     elif enable is True:
         global keystorepassword
-        keystorepassword = get_password(properties, "keyStorePassword")
+        keystorepassword = get_password(properties, "keyStorePassword").strip()
         global truststorepassword
-        truststorepassword = get_password(properties, "trustStorePassword")
+        truststorepassword = get_password(properties, "trustStorePassword").strip()
 
         if ca is True:
             generate_ca(properties, host, isoverwrite)
