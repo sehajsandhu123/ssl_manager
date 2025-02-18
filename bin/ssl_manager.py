@@ -459,9 +459,9 @@ def copy_certs(properties, ssh_key, scpusername, ownership):
 
         create_pkcs12 = "keytool -importkeystore -srckeystore " + CERT_DIR + '/' + "keystore.jks -destkeystore " + CERT_DIR + '/' + "keystore.p12 -srcstoretype jks -deststoretype pkcs12 -srcstorepass " + keystorepassword + " -deststorepass " + keystorepassword + " -destkeypass " + keystorepassword + " -alias nifi-cert"
 
-        create_pem_key = "openssl pkcs12 {0} -in {1}/keystore.p12 -nocerts -out {1}/key.pem -nodes -passin pass:{2} && chmod o+rwx {1}/key.pem".format(legacy_option, CERT_DIR, keystorepassword.strip())
+        create_pem_key = "openssl pkcs12 {0} -in {1}/keystore.p12 -nocerts -out {1}/key.pem -nodes -passin pass:{2} && chmod 777 {1}/key.pem".format(legacy_option, CERT_DIR, keystorepassword.strip())
 
-        create_pem_cert = "openssl pkcs12 {0} -in {1}/keystore.p12 -nokeys -out {1}/cert.pem -passin pass:{2} && chmod o+rwx {1}/cert.pem".format(legacy_option, CERT_DIR, keystorepassword.strip())
+        create_pem_cert = "openssl pkcs12 {0} -in {1}/keystore.p12 -nokeys -out {1}/cert.pem -passin pass:{2} && chmod 777 {1}/cert.pem".format(legacy_option, CERT_DIR, keystorepassword.strip())
 
 
         # Determine the OS type dynamically
