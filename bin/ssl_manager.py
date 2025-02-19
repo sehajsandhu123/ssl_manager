@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
-
+import platform
+import re
 import os
 import io
 import sys
@@ -131,6 +132,8 @@ def generate_ambari_specific(properties, host, outputdirectory):
     java_home = read_conf_file(properties, "env", "JAVA_HOME")
     keytool = java_home+'/bin/keytool'
     logger.info("Using Keytool {0}...".format(keytool))
+    
+    os_type, os_version = get_os_version()
 
     createp12 = [keytool, '-importkeystore', '-srckeystore', ambari_keystore,
                  '-destkeystore', ambari_p12, '-srcstoretype', 'jks',
@@ -139,6 +142,12 @@ def generate_ambari_specific(properties, host, outputdirectory):
                  'pass:'+keystorepassword, '-passout', 'pass:'+keystorepassword]
     createcrt = ['openssl', 'x509', '-in', ambari_pem, '-out', ambari_crt]
 
+    # Use '-legacy' only if OS version is **above Rocky 8 or Ubuntu 20**
+    use_legacy_flag = (os_type in ['10', '9'] and os_version >= 9) or (os_type in ['24','22','23'] and os_version >= 22)
+
+    if use_legacy_flag:
+        createpem.insert(2, '-legacy')  # Add '-legacy' flag at correct position
+    
     logger.info("Creating ambari-keystore.p12 for ambari...")
     cmd = subprocess.Popen(createp12)
     cmd.communicate()
@@ -162,7 +171,27 @@ def generate_ambari_specific(properties, host, outputdirectory):
         sys.exit(1)
     return
 
+def get_os_version():
+    """Detects the OS and version."""
+    try:
+        os_info = platform.system().lower()
+        if os_info == "linux":
+            # Use 'cat /etc/os-release' to get OS details
+            with open("/etc/os-release", "r") as f:
+                os_release = f.read()
 
+            # Extract OS ID and VERSION_ID
+            os_type_match = re.search(r'ID="?(\w+)"?', os_release)
+            os_version_match = re.search(r'VERSION_ID="?([\d.]+)"?', os_release)
+
+            os_type = os_type_match.group(1) if os_type_match else "unknown"
+            os_version = float(os_version_match.group(1)) if os_version_match else 0.0
+            logger.info("OS VERSION of this machine:  {0}...{1}".format(os_type,os_version))
+            return os_type, os_version
+    except Exception as e:
+        logger.error(f"Failed to determine OS version: {e}")
+        return "unknown", 0.0
+        
 def read_service_configs(service_name, conf_file):
     ssl_configs = ""
     try:
@@ -406,6 +435,12 @@ def copy_certs(properties, ssh_key, scpusername, ownership):
         dest = scpusername + '@' + host + ':' + CERT_DIR + '/'
         userhost = scpusername + '@' + host
         scp_command = "scp -o StrictHostKeyChecking=no -i " + ssh_key + " " + source + " " + dest
+        
+        os_type, os_version = get_os_version()
+        # Use '-legacy' only if OS version is **above Rocky 8 or Ubuntu 20**
+        use_legacy_flag = (os_type in ['10', '9'] and os_version >= 9) or (os_type in ['24','22','23'] and os_version >= 22)
+
+        legacy_option = "-legacy" if use_legacy_flag else ""
 
         logger.info("Creating cert dir {0} in host {1}".format(CERT_DIR, host))
         subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'mkdir', '-p', CERT_DIR]).communicate()
@@ -421,10 +456,9 @@ def copy_certs(properties, ssh_key, scpusername, ownership):
 
         create_pkcs12 = "keytool -importkeystore -srckeystore " + CERT_DIR + '/' + "keystore.jks -destkeystore " + CERT_DIR + '/' + "keystore.p12 -srcstoretype jks -deststoretype pkcs12 -srcstorepass " + keystorepassword + " -deststorepass " + keystorepassword + " -destkeypass " + keystorepassword + " -alias nifi-cert"
 
-        create_pem_key = "openssl pkcs12 -legacy -in  " + CERT_DIR + '/' + "keystore.p12  -nocerts -out  " + CERT_DIR + '/' + "key.pem -nodes -passin pass:" + keystorepassword + " && chmod 777 " + CERT_DIR + '/' + "key.pem"
-
-        create_pem_cert = "openssl pkcs12 -legacy -in  " + CERT_DIR + '/' + "keystore.p12  -nokeys -out  " + CERT_DIR + '/' + "cert.pem -passin pass:" + keystorepassword  + " && chmod 777 " + CERT_DIR + '/' + "cert.pem"
-
+        create_pem_key = "openssl pkcs12 {0} -in {1}/keystore.p12 -nocerts -out {1}/key.pem -nodes -passin pass:{2} && chmod 777 {1}/key.pem".format(legacy_option, CERT_DIR, keystorepassword.strip())
+        
+        create_pem_cert = "openssl pkcs12 {0} -in {1}/keystore.p12 -nokeys -out {1}/cert.pem -passin pass:{2} && chmod 777 {1}/cert.pem".format(legacy_option, CERT_DIR, keystorepassword.strip())
         # Determine the OS type dynamically
         os_type = get_remote_os_type(ssh_key, userhost)
 
