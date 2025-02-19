@@ -170,7 +170,7 @@ def generate_ambari_specific(properties, host, outputdirectory):
         logger.error("Unable to execute: {0}".format(createcrt))
         sys.exit(1)
     return
-
+    
 def get_os_version():
     """Detects the OS and version."""
     try:
@@ -186,10 +186,10 @@ def get_os_version():
 
             os_type = os_type_match.group(1) if os_type_match else "unknown"
             os_version = float(os_version_match.group(1)) if os_version_match else 0.0
-            logger.info("OS VERSION of this machine:  {0}...{1}".format(os_type,os_version))
+            logger.info("OS VERSION of this machine: {0}...{1}".format(os_type, os_version))
             return os_type, os_version
     except Exception as e:
-        logger.error(f"Failed to determine OS version: {e}")
+        logger.error("Failed to determine OS version: {}".format(e))
         return "unknown", 0.0
         
 def read_service_configs(service_name, conf_file):
