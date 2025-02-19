@@ -115,50 +115,50 @@ OZONE:
     ssl.client.truststore.location: $truststore
     ssl.client.truststore.password: $truststorepassword
     ssl.client.truststore.type: jks
-    ssl.client.keystore.location: $keystore
-    ssl.client.keystore.keypassword: $keystorepassword
-    ssl.client.keystore.password: $keystorepassword
-    ssl.client.keystore.type: jks
+    ssl.server.keystore.location: $keystore
+    ssl.server.keystore.keypassword: $keystorepassword
+    ssl.server.keystore.password: $keystorepassword
+    ssl.server.keystore.type: jks
 
   - config_type: ssl-server-om
     ssl.client.truststore.location: $truststore
     ssl.client.truststore.password: $truststorepassword
     ssl.client.truststore.type: jks
-    ssl.client.keystore.location: $keystore
-    ssl.client.keystore.keypassword: $keystorepassword
-    ssl.client.keystore.password: $keystorepassword
-    ssl.client.keystore.type: jks
+    ssl.server.keystore.location: $keystore
+    ssl.server.keystore.keypassword: $keystorepassword
+    ssl.server.keystore.password: $keystorepassword
+    ssl.server.keystore.type: jks
 
   - config_type: ssl-server-recon
     ssl.client.truststore.location: $truststore
     ssl.client.truststore.password: $truststorepassword
     ssl.client.truststore.type: jks
-    ssl.client.keystore.location: $keystore
-    ssl.client.keystore.keypassword: $keystorepassword
-    ssl.client.keystore.password: $keystorepassword
-    ssl.client.keystore.type: jks
+    ssl.server.keystore.location: $keystore
+    ssl.server.keystore.keypassword: $keystorepassword
+    ssl.server.keystore.password: $keystorepassword
+    ssl.server.keystore.type: jks
 
   - config_type: ssl-server-s3g
     ssl.client.truststore.location: $truststore
     ssl.client.truststore.password: $truststorepassword
     ssl.client.truststore.type: jks
-    ssl.client.keystore.location: $keystore
-    ssl.client.keystore.keypassword: $keystorepassword
-    ssl.client.keystore.password: $keystorepassword
-    ssl.client.keystore.type: jks
+    ssl.server.keystore.location: $keystore
+    ssl.server.keystore.keypassword: $keystorepassword
+    ssl.server.keystore.password: $keystorepassword
+    ssl.server.keystore.type: jks
 
   - config_type: ssl-server-scm
     ssl.client.truststore.location: $truststore
     ssl.client.truststore.password: $truststorepassword
     ssl.client.truststore.type: jks
-    ssl.client.keystore.location: $keystore
-    ssl.client.keystore.keypassword: $keystorepassword
-    ssl.client.keystore.password: $keystorepassword
-    ssl.client.keystore.type: jks
+    ssl.server.keystore.location: $keystore
+    ssl.server.keystore.keypassword: $keystorepassword
+    ssl.server.keystore.password: $keystorepassword
+    ssl.server.keystore.type: jks
 
   - config_type: ozone-site
     ozone.https.client.keystore.resource: ssl-client.xml
-    ozone.https.server.keystore.resource: ssl-client.xml
+    ozone.https.server.keystore.resource: ssl-server.xml
     ozone.http.policy: HTTPS_ONLY
 
 
@@ -246,7 +246,7 @@ RANGERKMS:
     ranger.service.https.attrib.keystore.pass: $keystorepassword
     ranger.service.https.attrib.ssl.enabled: true
     ranger.service.https.port: 9393
-    
+
 RANGERADMIN:
   - config_type: ranger-admin-site
     ranger.service.http.enabled: false
@@ -514,4 +514,4 @@ NIFI_REGISTRY:
   - config_type: nifi-registry-properties
     nifi.registry.security.keystorePasswd: $keystorepassword
     nifi.registry.security.keyPasswd: $keystorepassword
-    nifi.registry.security.truststorePasswd: $truststorepassword   
+    nifi.registry.security.truststorePasswd: $truststorepassword  
