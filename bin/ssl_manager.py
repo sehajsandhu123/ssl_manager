@@ -20,10 +20,10 @@ CA_DIR = os.getcwd()
 CA_CONF_DIR = "conf"
 
 #####
-ALL_SERVICES = ['HDFS', 'MRSHUFFLE', 'TEZ', 'HIVE', 'KAFKA', 'KAFKA3', 'RANGER', 'SPARK2', 'SPARK3','DRUID' ,'IMPALA' ,'OZONE' ,'CRUISE_CONTROL' ,'CRUISE_CONTROL3','FLINK','LIVY','LIVY3']
+ALL_SERVICES = ['HDFS', 'MRSHUFFLE', 'TEZ', 'HIVE', 'KAFKA', 'KAFKA3', 'RANGER', 'SPARK2', 'SPARK3','DRUID' ,'IMPALA' ,'OZONE' ,'CRUISE_CONTROL' ,'CRUISE_CONTROL3','FLINK','LIVY','LIVY3','HTTPFS','KAFKA_CONNECT','KAFKA3_CONNECT','JUPYTER','OOZIE']
 RANGER = ['RANGERADMIN', 'RANGERPLUGINS']
 
-ALL_UI = ['HDFSUI', 'YARN', 'MAPREDUCE2UI', 'HBASE', 'OOZIE', 'AMBARI_INFRA', 'AMBARI_INFRA_SOLR', 'ATLAS', 'ZEPPELIN', 'NIFI', 'NIFI_REGISTRY','AIRFLOW','REGISTRY']
+ALL_UI = ['HDFSUI', 'YARN', 'MAPREDUCE2UI', 'HBASE', 'OOZIE', 'AMBARI_INFRA', 'AMBARI_INFRA_SOLR', 'ATLAS', 'ZEPPELIN', 'NIFI', 'NIFI_REGISTRY','AIRFLOW','REGISTRY','HTTPFS']
 AMBARI = ['AMBARIUI']
 #####
 
@@ -237,7 +237,7 @@ def put_configs(config):
             config[1] = {}
         new_properties = config[0]
         new_attributes = config[1]
-        logger.debug('### PUTting : "{0}"'.format(json.dumps(config, indent=2)))
+        logger.info('### PUTting : "{0}"'.format(json.dumps(config, indent=2)))
         return new_properties, new_attributes
     return update
 
@@ -284,6 +284,8 @@ def update_configs_ambari(services, accessor, cluster, conf_file):
                     section[k] = config[0].get("yarn.log.server.url").replace('http:', 'https:').replace('19888', '19890')
                 elif section[k] == "$timelineserver":
                     section[k] = config[0].get("yarn.log.server.web-service.url").replace('http:', 'https:').replace('8188', '8190')
+                elif section[k] == "$oozieserver":
+                    section[k] = config[0].get("oozie.base.url").replace('http:', 'https:').replace('11000', '11443')                    
                 config[0].update({k: section[k]})
             updater = put_configs(config)
             configs.update_config(cluster, config_type, updater, accessor)

@@ -70,6 +70,9 @@ KAFKA:
     ssl.key.password: $keystorepassword
     ssl.truststore.location: $truststore
     ssl.truststore.password: $truststorepassword
+    listeners: SASL_SSL://localhost:6667
+    security.inter.broker.protocol: SASL_SSL 
+
 
 OZONE:
   - config_type: ozone-env
@@ -164,6 +167,7 @@ OZONE:
 
 CRUISE_CONTROL:
   - config_type: cruise-control
+    security.inter.broker.protocol: SASL_SSL 
     ssl.client.auth: none
     ssl.enabled.protocols: TLSv1.2
     ssl.endpoint.identification.algorithm: HTTPS
@@ -181,9 +185,21 @@ CRUISE_CONTROL:
     webserver.ssl.protocol: TLSv1.2
     webserver.ssl.truststore.location: $truststore
     webserver.ssl.truststore.password: $truststorepassword
+  - config_type: kafka-broker
+    cruise.control.metrics.reporter.ssl.client.auth: none
+    cruise.control.metrics.reporter.ssl.enabled.protocols: TLSv1.2
+    cruise.control.metrics.reporter.ssl.endpoint.identification.algorithm: HTTPS
+    cruise.control.metrics.reporter.ssl.keystore.location: $keystore
+    cruise.control.metrics.reporter.ssl.keystore.password: $keystorepassword
+    cruise.control.metrics.reporter.ssl.protocol: TLSv1.2
+    cruise.control.metrics.reporter.ssl.truststore.location: $truststore
+    cruise.control.metrics.reporter.ssl.truststore.password: $truststorepassword
+
+
 
 CRUISE_CONTROL3:
   - config_type: cruise-control3
+    security.inter.broker.protocol: SASL_SSL 
     ssl.client.auth: none
     ssl.enabled.protocols: TLSv1.2
     ssl.endpoint.identification.algorithm: HTTPS
@@ -201,15 +217,34 @@ CRUISE_CONTROL3:
     webserver.ssl.protocol: TLSv1.2
     webserver.ssl.truststore.location: $truststore
     webserver.ssl.truststore.password: $truststorepassword
-
+  - config_type: kafka3-broker
+    cruise.control.metrics.reporter.ssl.client.auth: none
+    cruise.control.metrics.reporter.ssl.enabled.protocols: TLSv1.2
+    cruise.control.metrics.reporter.ssl.endpoint.identification.algorithm: HTTPS
+    cruise.control.metrics.reporter.ssl.keystore.location: $keystore
+    cruise.control.metrics.reporter.ssl.keystore.password: $keystorepassword
+    cruise.control.metrics.reporter.ssl.protocol: TLSv1.2
+    cruise.control.metrics.reporter.ssl.truststore.location: $truststore
+    cruise.control.metrics.reporter.ssl.truststore.password: $truststorepassword
 
 KAFKA3:
   - config_type: kafka3-broker
+    security.inter.broker.protocol: SASL_SSL 
+    listeners: SASL_SSL://localhost:6669
     ssl.keystore.location: $keystore
     ssl.keystore.password: $keystorepassword
     ssl.key.password: $keystorepassword
     ssl.truststore.location: $truststore
     ssl.truststore.password: $truststorepassword
+
+KAFKA_CONNECT:
+  - config_type: kafka-connect-distributed
+    security.inter.broker.protocol: SASL_SSL 
+
+
+KAFKA3_CONNECT:
+  - config_type: kafka3-connect-distributed
+    security.inter.broker.protocol: SASL_SSL 
 
 HIVE:
   - config_type: hive-site
@@ -439,12 +474,30 @@ FLINK:
   - config_type: flink-log4j
     security.ssl.key-password: $keystorepassword
 
+KUDU:
+  - config_type: kudu-master-env
+    webserver_certificate_file: $pemCert
+    webserver_private_key_file: $pemKey
+  - config_type: kudu-tablet-env
+    webserver_certificate_file: $pemCert
+    webserver_private_key_file: $pemKey
 
 AIRFLOW:
   - config_type: airflow-webserver-site
     enable_ssl: True
     web_server_ssl_cert: $pemCert
     web_server_ssl_key: $pemKey
+
+HTTPFS:
+  - config_type: httpfs-site
+    httpfs.ssl.enabled: 'true'
+
+JUPYTER:
+  - config_type: jupyterhub-conf
+    enable_ssl: 'true'
+    JupyterHub_ssl_key: $pemKey
+    JupyterHub_ssl_cert: $pemCert
+
 
 REGISTRY:
   - config_type: registry-ssl-config
@@ -478,6 +531,7 @@ NIFI:
 
   - config_type: nifi-ambari-ssl-config
     nifi.ssl.isenabled: true
+    nifi.node.ssl.isenabled: true
     nifi.security.keystore: $keystore
     nifi.security.keystoreType: jks
     nifi.security.keystorePasswd: $keystorepassword
