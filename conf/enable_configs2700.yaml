@@ -84,6 +84,12 @@ OZONE:
     ozone__ssl_enabled: true
     ozone__ssl_enabled: true
 
+  - config_type: ranger-ozone-policymgr-ssl
+    xasecure.policymgr.clientssl.keystore: $keystore    
+    xasecure.policymgr.clientssl.keystore.password: $keystorepassword
+    xasecure.policymgr.clientssl.truststore: $truststore
+    xasecure.policymgr.clientssl.truststore.password: $truststorepassword
+
   - config_type: ozone-ssl-client
     ssl.client.truststore.location: $truststore
     ssl.client.truststore.password: $truststorepassword
@@ -163,7 +169,10 @@ OZONE:
     ozone.https.client.keystore.resource: ssl-client.xml
     ozone.https.server.keystore.resource: ssl-server.xml
     ozone.http.policy: HTTPS_ONLY
+    hadoop.rpc.protection: privacy
 
+  - config_type: ranger-ozone-plugin-properties
+    hadoop.rpc.protection: privacy
 
 CRUISE_CONTROL:
   - config_type: cruise-control
@@ -444,6 +453,8 @@ DRUID:
     druid.server.https.keyStoreType: jks
     druid.enablePlaintextPort: false
     druid.enableTlsPort: true
+    druid.extensions.loadList: $druidLoadList
+
 
 IMPALA:
   - config_type: impala-env
