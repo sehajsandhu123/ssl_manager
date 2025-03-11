@@ -287,7 +287,9 @@ def update_configs_ambari(services, accessor, cluster, conf_file):
                 elif section[k] == "$timelineserver":
                     section[k] = config[0].get("yarn.log.server.web-service.url").replace('http:', 'https:').replace('8188', '8190')
                 elif section[k] == "$oozieserver":
-                    section[k] = config[0].get("oozie.base.url").replace('http:', 'https:').replace('11000', '11443')                    
+                    section[k] = config[0].get("oozie.base.url").replace('http:', 'https:').replace('11000', '11443')
+                elif section[k] == "$druidLoadList":
+                    section[k] = config[0].get("druid.extensions.loadList").replace(']', ',"simple-client-sslcontext"]') 
                 config[0].update({k: section[k]})
             updater = put_configs(config)
             configs.update_config(cluster, config_type, updater, accessor)
