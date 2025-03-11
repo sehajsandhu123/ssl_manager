@@ -484,7 +484,7 @@ KUDU:
 
 AIRFLOW:
   - config_type: airflow-webserver-site
-    enable_ssl: True
+    enable_ssl: 'True'
     web_server_ssl_cert: $pemCert
     web_server_ssl_key: $pemKey
 
