@@ -27,7 +27,10 @@ HDFS:
   - config_type: hdfs-site
     dfs.encrypt.data.transfer: true
     dfs.encrypt.data.transfer.algorithm: 3des
-
+    
+  - config_type: ranger-hdfs-plugin-properties
+    hadoop.rpc.protection: privacy
+    
 HDFSUI:
   - config_type: hdfs-site
     dfs.http.policy: HTTPS_ONLY
