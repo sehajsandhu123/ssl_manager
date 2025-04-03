@@ -288,6 +288,16 @@ def update_configs_ambari(services, accessor, cluster, conf_file):
                     section[k] = config[0].get("oozie.base.url").replace('http:', 'https:').replace('11000', '11443')
                 elif section[k] == "$druidLoadList":
                     section[k] = config[0].get("druid.extensions.loadList").replace(']', ',"simple-client-sslcontext"]') 
+#                elif section[k] == "$rangerPolicyUrl":
+#                    section[k] = config[0].get("ranger.plugin.kms.policy.rest.url").replace('http', 'https').replace('6080','6182')
+                elif section[k] == "$rangerSslUrl":
+                    section[k] = config[0].get("policymgr_external_url").replace('http', 'https').replace('6080','6182')
+                elif section[k] == "$rangerPolicyUrl":
+                    # Find all matching keys using regex pattern
+                    for config_key in config[0]:
+                        if re.match(r".*\.policy\.rest\.url$", config_key):
+                            section[k] = config[0][config_key].replace('http', 'https').replace('6080', '6182')
+                   
                 config[0].update({k: section[k]})
             updater = put_configs(config)
             configs.update_config(cluster, config_type, updater, accessor)

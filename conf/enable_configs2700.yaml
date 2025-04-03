@@ -30,7 +30,10 @@ HDFS:
     
   - config_type: ranger-hdfs-plugin-properties
     hadoop.rpc.protection: privacy
-
+  
+  - config_type: ranger-hdfs-security
+    ranger.plugin.hdfs.policy.rest.url: $rangerPolicyUrl
+    
 HDFSUI:
   - config_type: hdfs-site
     dfs.http.policy: HTTPS_ONLY
@@ -59,6 +62,9 @@ YARN:
 
   - config_type: hdfs-site
     dfs.https.enable: true
+  
+  - config_type: ranger-yarn-security
+    ranger.plugin.yarn.policy.rest.url: $rangerPolicyUrl
 
 TEZ:
   - config_type: tez-site
@@ -76,6 +82,8 @@ KAFKA:
     listeners: SASL_SSL://localhost:6667
     security.inter.broker.protocol: SASL_SSL 
 
+  - config_type: ranger-kafka-security
+    ranger.plugin.kafka.policy.rest.url: $rangerPolicyUrl
 
 OZONE:
   - config_type: ozone-env
@@ -264,6 +272,9 @@ HIVE:
     hive.server2.keystore.path: $keystore
     hive.server2.keystore.password: $keystorepassword
 
+  - config_type: ranger-hive-security
+    ranger.plugin.hive.policy.rest.url: $rangerPolicyUrl
+
 ZEPPELIN:
   - config_type: zeppelin-site
     zeppelin.ssl: true
@@ -294,6 +305,9 @@ RANGERKMS:
     ranger.service.https.attrib.ssl.enabled: true
     ranger.service.https.port: 9393
 
+  - config_type: ranger-kms-security
+    ranger.plugin.kms.policy.rest.url: $rangerPolicyUrl
+ 
 RANGERADMIN:
   - config_type: ranger-admin-site
     ranger.service.http.enabled: false
@@ -308,6 +322,9 @@ RANGERADMIN:
     ranger.truststore.password: $truststorepassword
     ranger.service.https.attrib.keystore.file: $keystore
     ranger.service.https.attrib.client.auth: want
+
+  - config_type: admin-properties
+    policymgr_external_url: $rangerSslUrl
 
   - config_type: ranger-tagsync-policymgr-ssl
     xasecure.policymgr.clientssl.keystore: $keystore
@@ -383,6 +400,9 @@ HBASE:
     ssl.server.keystore.keypassword: $keystorepassword
     ssl.server.keystore.password: $keystorepassword
     ssl.server.keystore.location: $keystore
+
+  - config_type: ranger-hbase-security
+    ranger.plugin.hbase.policy.rest.url: $rangerPolicyUrl
 
 SPARK2:
   - config_type: yarn-site
