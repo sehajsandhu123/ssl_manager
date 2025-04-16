@@ -371,7 +371,7 @@ def get_remote_os_type(ssh_key, userhost):
         return None
 
 
-def execute_remote_commands(ssh_key, userhost, export_command, delete_command_cacerts, delete_command_ambari,import_command_cacerts, import_command_ambari, create_pkcs12, create_pem_key, create_pem_cert):
+def execute_remote_commands(ssh_key, userhost, export_command, delete_command_cacerts, delete_command_ambari,import_command_cacerts, import_command_ambari, create_pkcs12, create_pem_key, create_pem_cert, add_ambari_ssl_props):
     try:
         # Execute export cert command
         logger.info("Exporting cert from truststore on host {0}".format(userhost))
@@ -433,10 +433,27 @@ def execute_remote_commands(ssh_key, userhost, export_command, delete_command_ca
             "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, create_pem_cert),
             shell=True
         ).communicate()
-
+        
+        # Append ambari configs
+        logger.info("Append ambari_ssl props on host {0}".format(userhost))
+        subprocess.Popen(
+            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, add_ambari_ssl_props),
+            shell=True
+        ).communicate()
+        
     except Exception as e:
         logger.error("Failed to execute commands on host {0}: {1}".format(userhost, str(e)))
 
+def execute_remote_bash(cmd):
+    try:
+        # Execute export cert command
+        logger.info("Executing command {0} on host {1}".format(cmd, userhost))
+        subprocess.Popen(
+            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, cmd), 
+            shell=True
+        ).communicate()
+    except Exception as e:
+        logger.error("Failed to execute commands on host {0}: {1}".format(userhost, str(e)))
 
 
 def copy_certs(properties, ssh_key, scpusername, ownership):
@@ -487,9 +504,8 @@ def copy_certs(properties, ssh_key, scpusername, ownership):
                 delete_command_ambari = "keytool -delete -alias nifi-cert -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit"
 
                 import_command_cacerts = "keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ssl/certs/java/cacerts -storepass changeit -noprompt"
-
                 import_command_ambari = "keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit -noprompt"
-
+                
             elif os_type in ['rhel', 'centos', 'rocky']:
                 logger.info("Running keytool commands for Rocky Linux or RHEL...")
                 export_command = "keytool -exportcert -alias nifi-cert -keystore /etc/security/certificates/truststore.jks -file /tmp/mycert.crt -storepass Hadoop@123 -noprompt"
@@ -499,8 +515,9 @@ def copy_certs(properties, ssh_key, scpusername, ownership):
                 import_command_cacerts = "keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/pki/ca-trust/extracted/java/cacerts -storepass changeit -noprompt"
                 import_command_ambari = "keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit -noprompt"
 
+            add_ambari_ssl_props = "echo 'ssl.trustStore.path=/etc/security/certificates/truststore.jks' >> /etc/ambari-server/conf/ambari.properties && echo 'ssl.trustStore.password=Hadoop@123' >> /etc/ambari-server/conf/ambari.properties"
             # Execute the remote commands
-            execute_remote_commands(ssh_key, userhost, export_command, delete_command_cacerts, delete_command_ambari, import_command_cacerts, import_command_ambari, create_pkcs12, create_pem_key, create_pem_cert)
+            execute_remote_commands(ssh_key, userhost, export_command, delete_command_cacerts, delete_command_ambari, import_command_cacerts, import_command_ambari, create_pkcs12, create_pem_key, create_pem_cert, add_ambari_ssl_props)
         else:
             logger.error("Could not determine OS type for host {0}. Skipping keytool operations.".format(userhost))
 
