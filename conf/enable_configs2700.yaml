@@ -474,8 +474,8 @@ DRUID:
     druid.server.https.keyStorePassword: $keystorepassword
     druid.server.https.keyStorePath: $keystore
     druid.server.https.keyStoreType: jks
-    druid.enablePlaintextPort: false
-    druid.enableTlsPort: true
+    druid.enablePlaintextPort: False
+    druid.enableTlsPort: True
     druid.extensions.loadList: $druidLoadList
 
 
