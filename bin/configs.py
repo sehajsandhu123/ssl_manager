@@ -28,6 +28,7 @@ import base64
 import xml
 import xml.etree.ElementTree as ET
 import os
+import ssl
 import logging
 
 logger = logging.getLogger('AmbariConfig')
@@ -83,6 +84,7 @@ class UsageException(Exception):
 def api_accessor(host, login, password, protocol, port):
   def do_request(api_url, request_type=GET_REQUEST_TYPE, request_body=''):
     try:
+      ssl_context = ssl._create_unverfied_context()
       url = '{0}://{1}:{2}{3}'.format(protocol, host, port, api_url)
       admin_auth = base64.encodestring('%s:%s' % (login, password)).replace('\n', '')
       request = urllib2.Request(url)
@@ -90,7 +92,9 @@ def api_accessor(host, login, password, protocol, port):
       request.add_header('X-Requested-By', 'ambari')
       request.add_data(request_body)
       request.get_method = lambda: request_type
-      response = urllib2.urlopen(request)
+      https_handler = urllib2.HTTPSHandler(context=ssl_context)
+      opener = urllib2.build_opener(https_handler)
+      response = opener.open(request)
       response_body = response.read()
     except Exception as exc:
       raise Exception('Problem with accessing api. Reason: {0}'.format(exc))

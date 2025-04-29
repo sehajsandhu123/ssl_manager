@@ -137,7 +137,7 @@ def generate_ambari_specific(properties, host, outputdirectory):
 
     createp12 = [keytool, '-importkeystore', '-srckeystore', ambari_keystore,
                  '-destkeystore', ambari_p12, '-srcstoretype', 'jks',
-                 '-deststoretype', 'pkcs12', '-srcstorepass', keystorepassword, '-deststorepass', keystorepassword]
+                 '-deststoretype', 'pkcs12', '-srcstorepass', keystorepassword, '-deststorepass', keystorepassword, '-noprompt']
     createpem = ['openssl', 'pkcs12', '-in', ambari_p12, '-out', ambari_pem, '-passin',
                  'pass:'+keystorepassword, '-passout', 'pass:'+keystorepassword]
     createcrt = ['openssl', 'x509', '-in', ambari_pem, '-out', ambari_crt]
