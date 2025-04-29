@@ -28,6 +28,7 @@ import base64
 import xml
 import xml.etree.ElementTree as ET
 import os
+import ssl
 import logging
 
 logger = logging.getLogger('AmbariConfig')
@@ -91,10 +92,10 @@ def api_accessor(host, login, password, protocol, port):
       request = urllib.request.Request(url, data=request_body_bytes)
       request.add_header('Authorization', 'Basic %s' % admin_auth)
       request.add_header('X-Requested-By', 'ambari')
-
+      ssl_context = ssl._create_unverified_context()
       if request_type != 'POST':  # POST is the default when data is present
         request.method = request_type  # Set the HTTP method (available since Python 3.3)
-      response = urllib.request.urlopen(request)
+      response = urllib.request.urlopen(request, context=ssl_context)
       response_body = response.read()
     except Exception as exc:
       raise Exception('Problem with accessing api. Reason: {0}'.format(exc))
