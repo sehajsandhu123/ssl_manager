@@ -458,6 +458,11 @@ def execute_remote_bash(cmd):
     except Exception as e:
         logger.error("Failed to execute commands on host {0}: {1}".format(userhost, str(e)))
 
+def find_file_path(base_dir, filename):
+    for root, dirs, files in os.walk(base_dir):
+        if filename in files:
+            return os.path.join(root, filename)
+    return None
 
 def copy_certs(properties, ssh_key, scpusername, ownership):
     opdir = os.path.abspath(read_conf_file(properties, "caprops", "outputDirectory"))
@@ -467,9 +472,11 @@ def copy_certs(properties, ssh_key, scpusername, ownership):
     for host in host_list.split(','):
         logger.info(host)
         source = os.path.join(opdir, host) + '/*'
+        ambari_keystore_path = find_file_path(opdir, "ambari-keystore.p12")
         dest = scpusername + '@' + host + ':' + CERT_DIR + '/'
         userhost = scpusername + '@' + host
         scp_command = "scp -o StrictHostKeyChecking=no -i " + ssh_key + " " + source + " " + dest
+        scp_ambari_keystore = "scp -o StrictHostKeyChecking=no -i " + ssh_key + " " + ambari_keystore_path + " " + dest
 
         os_type, os_version = get_os_version()
         # Use '-legacy' only if OS version is **above Rocky 8 or Ubuntu 20**
@@ -482,6 +489,9 @@ def copy_certs(properties, ssh_key, scpusername, ownership):
 
         logger.info("Copying certs to host {0}".format(host))
         subprocess.Popen(scp_command, shell=True).communicate()
+
+        logger.info("Copying ambari-keystore.p12 to host {0}".format(host))
+        subprocess.Popen(scp_ambari_keystore, shell=True).communicate()
 
         logger.info("Changing the permissions..")
         subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'chmod', '-R', '750', CERT_DIR]).communicate()
