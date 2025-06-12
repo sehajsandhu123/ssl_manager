@@ -84,7 +84,7 @@ class UsageException(Exception):
 def api_accessor(host, login, password, protocol, port):
   def do_request(api_url, request_type=GET_REQUEST_TYPE, request_body=''):
     try:
-      ssl_context = ssl._create_unverfied_context()
+      ssl_context = ssl._create_unverified_context()
       url = '{0}://{1}:{2}{3}'.format(protocol, host, port, api_url)
       admin_auth = base64.encodestring('%s:%s' % (login, password)).replace('\n', '')
       request = urllib2.Request(url)
