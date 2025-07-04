@@ -266,6 +266,16 @@ KAFKA3_CONNECT:
   - config_type: kafka3-connect-distributed
     security.inter.broker.protocol: SASL_SSL 
 
+PINOT:
+  - config_type: pinot-env
+    enable_ssl: true
+    controller.tls.keystore.path: $p12_location
+    controller.tls.truststore.path: $p12_location
+    controller.tls.keystore.password: $keystorepassword
+    controller.tls.truststore.password: $keystorepassword
+    controller.access.protocols: https
+
+
 HIVE:
   - config_type: hive-site
     hive.server2.use.SSL: true
