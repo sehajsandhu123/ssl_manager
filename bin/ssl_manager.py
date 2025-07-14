@@ -297,7 +297,7 @@ def update_configs_ambari(services, accessor, cluster, conf_file):
                     # Find all matching keys using regex pattern
                     for config_key in config[0]:
                         if re.match(r".*\.policy\.rest\.url$", config_key):
-                            section[k] = config[0][config_key].replace('http', 'https').replace('6080', '6182')
+                            section[k] = config[0][config_key].replace('http:', 'https:').replace('6080', '6182')
                    
                 config[0].update({k: section[k]})
             updater = put_configs(config)
