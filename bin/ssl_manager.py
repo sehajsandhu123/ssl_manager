@@ -20,7 +20,7 @@ CA_DIR = os.getcwd()
 CA_CONF_DIR = "conf"
 
 #####
-ALL_SERVICES = ['HDFS', 'MRSHUFFLE', 'TEZ', 'HIVE', 'KAFKA', 'KAFKA3', 'RANGER', 'SPARK2', 'SPARK3','DRUID' ,'IMPALA' ,'OZONE' ,'CRUISE_CONTROL' ,'CRUISE_CONTROL3','FLINK','LIVY','LIVY3','HTTPFS','KAFKA_CONNECT','KAFKA3_CONNECT','JUPYTER','OOZIE']
+ALL_SERVICES = ['HDFS', 'MRSHUFFLE', 'TEZ', 'HIVE', 'KAFKA', 'KAFKA3', 'RANGER', 'RANGER_KMS', 'SPARK2', 'SPARK3','DRUID' ,'IMPALA' ,'OZONE' ,'CRUISE_CONTROL' ,'CRUISE_CONTROL3','FLINK','LIVY','LIVY3','HTTPFS','KAFKA_CONNECT','KAFKA3_CONNECT','JUPYTER','OOZIE']
 RANGER = ['RANGERADMIN', 'RANGERPLUGINS']
 
 ALL_UI = ['HDFSUI', 'YARN', 'MAPREDUCE2UI', 'HBASE', 'OOZIE', 'AMBARI_INFRA', 'AMBARI_INFRA_SOLR', 'ATLAS', 'ZEPPELIN', 'NIFI', 'NIFI_REGISTRY','AIRFLOW','REGISTRY','HTTPFS']
@@ -293,6 +293,10 @@ def update_configs_ambari(services, accessor, cluster, conf_file):
                     section[k] = config[0].get("druid.extensions.loadList").replace(']', ',"simple-client-sslcontext"]') 
                 elif section[k] == "$rangerSslUrl":
                     section[k] = config[0].get("policymgr_external_url").replace('http:', 'https:').replace('6080','6182')
+                elif section[k] == "$keyProviderPath":
+                    section[k] = config[0].get("hadoop.security.key.provider.path").replace('http:', 'https:').replace('9292','9393')
+                elif section[k] == "$keyProviderUri":
+                    section[k] = config[0].get("dfs.encryption.key.provider.uri").replace('http:', 'https:').replace('9292','9393')
                 elif section[k] == "$rangerPolicyUrl":
                     # Find all matching keys using regex pattern
                     for config_key in config[0]:
