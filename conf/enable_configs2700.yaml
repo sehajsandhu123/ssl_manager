@@ -295,7 +295,7 @@ AMBARI_INFRA_SOLR:
     infra_solr_truststore_location: $p12_location
     infra_solr_truststore_password: $truststorepassword
 
-RANGERKMS:
+RANGER_KMS:
   - config_type: ranger-kms-site
     ranger.service.https.attrib.client.auth: want
     ranger.service.https.attrib.keystore.credential.alias: keyStoreCredentialAlias
@@ -307,7 +307,19 @@ RANGERKMS:
 
   - config_type: ranger-kms-security
     ranger.plugin.kms.policy.rest.url: $rangerPolicyUrl
- 
+
+  - config_type: kms-env
+    kms_port: 9393
+
+  - config_type: kms-site
+    hadoop.kms.key.provider.uri: dbks://https@localhost:9393
+
+  - config_type: core-site
+    hadoop.security.key.provider.path: $keyProviderPath
+
+  - config_type: hdfs-site
+    dfs.encryption.key.provider.uri: $keyProviderUri 
+
 RANGERADMIN:
   - config_type: ranger-admin-site
     ranger.service.http.enabled: false
