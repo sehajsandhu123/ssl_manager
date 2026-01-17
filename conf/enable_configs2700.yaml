@@ -314,6 +314,10 @@ RANGER_KMS:
     ranger.service.https.attrib.keystore.pass: $keystorepassword
     ranger.service.https.attrib.ssl.enabled: true
     ranger.service.https.port: 9393
+    
+  - config_type: ranger-kms-policymgr-ssl
+    xasecure.policymgr.clientssl.keystore: $keystore
+    xasecure.policymgr.clientssl.truststore: $truststore
 
   - config_type: ranger-kms-security
     ranger.plugin.kms.policy.rest.url: $rangerPolicyUrl
